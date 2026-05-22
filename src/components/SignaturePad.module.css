@@ -1,0 +1,111 @@
+/* SignaturePad component styles */
+
+.wrapper {
+  background: #fff;
+  border: 1px solid rgba(209, 209, 214, 0.7);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+  display: grid;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1c1e;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-grey-dark);
+}
+
+.canvasWrapper {
+  position: relative;
+  border: 1.5px dashed var(--color-grey);
+  border-radius: 14px;
+  background: #fafafa;
+  overflow: hidden;
+  height: 180px;
+  cursor: crosshair;
+}
+
+/* Force canvas to fill the wrapper */
+.canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-grey);
+  pointer-events: none;
+  user-select: none;
+}
+
+.clearBtn {
+  background: transparent;
+  color: var(--color-grey-dark);
+  border: 1px solid var(--color-grey);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.clearBtn:hover {
+  background: var(--color-grey-light);
+}
+
+.signerRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.signerLabel {
+  flex: 1;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-grey-dark);
+}
+
+.signerInput {
+  font-family: var(--font-family-base);
+  padding: 10px 14px;
+  border: 1px solid var(--color-grey);
+  border-radius: 14px;
+  font-size: 14px;
+  width: 100%;
+  background: #fff;
+}
+
+.badge {
+  padding: 6px 14px;
+  background: #ecfdf5;
+  color: #059669;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}

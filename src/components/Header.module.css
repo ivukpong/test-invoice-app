@@ -1,0 +1,300 @@
+/* Navigation */
+.nav {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  width: 100%;
+}
+
+.navContainer {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.logoIcon {
+  width: 28px;
+  height: 28px;
+  color: #3b82f6;
+}
+
+.logoText {
+  font-weight: 800;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navCenter {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.navCenter.hidden {
+  display: none;
+}
+
+.navLink {
+  color: #475569;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.navLink:hover {
+  color: #3b82f6;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.invoiceCount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 16px;
+  border-right: 1px solid #e2e8f0;
+  margin-right: 8px;
+}
+
+.invoiceCountNumber {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.invoiceCountLabel {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.navButtonSecondary {
+  background: transparent;
+  color: #0f172a;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.navButtonSecondary:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.navButtonPrimary {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.navButtonPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+}
+
+.profileName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  background: #f1f5f9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profileName:hover {
+  background: #e2e8f0;
+}
+
+.logoutButton {
+  background: transparent;
+  color: #dc2626;
+  border: 2px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutButton:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.mobileMenuButton {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #0f172a;
+  padding: 8px;
+}
+
+.mobileMenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 20px 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.mobileNavLink {
+  display: block;
+  color: #475569;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 12px 0;
+  transition: color 0.2s;
+}
+
+.mobileNavLink:hover {
+  color: #3b82f6;
+}
+
+.mobileMenuDivider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 12px 0;
+}
+
+.mobileProfile {
+  padding: 12px 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  text-align: center;
+}
+
+.mobileLogoutButton {
+  width: 100%;
+  background: transparent;
+  color: #dc2626;
+  border: 2px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.mobileButtonSecondary {
+  width: 100%;
+  background: transparent;
+  color: #0f172a;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.mobileButtonPrimary {
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .navCenter {
+    display: none;
+  }
+
+  .mobileMenuButton {
+    display: block;
+  }
+
+  .mobileMenu {
+    display: block;
+  }
+
+  .invoiceCount {
+    display: none;
+  }
+
+  .navRight {
+    gap: 8px;
+  }
+
+  .signInButton,
+  .signUpButton {
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .navContainer {
+    padding: 12px 16px;
+  }
+
+  .logoText {
+    font-size: 1rem;
+  }
+
+  .navRight {
+    display: none;
+  }
+}

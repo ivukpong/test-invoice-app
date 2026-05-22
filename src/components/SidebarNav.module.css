@@ -1,0 +1,318 @@
+.sidebar {
+  width: 280px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.logoIcon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+}
+
+.logoIconSvg {
+  width: 26px;
+  height: 26px;
+  color: #fff;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+}
+
+.logoName {
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.logoTagline {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.nav {
+  padding: 20px 12px 12px;
+  flex: 1;
+}
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navSectionLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 14px 8px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  font-family: inherit;
+  position: relative;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.navItem:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.navItemActive {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.navItemActive:hover {
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.navIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.navBadge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* Help Section */
+.helpSection {
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.helpCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.helpCard:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(252, 211, 77, 0.2);
+}
+
+.helpIcon {
+  width: 22px;
+  height: 22px;
+  color: #92400e;
+  flex-shrink: 0;
+}
+
+.helpContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.helpContent strong {
+  font-size: 0.8125rem;
+  color: #92400e;
+  font-weight: 700;
+}
+
+.helpContent span {
+  font-size: 0.6875rem;
+  color: #b45309;
+  margin-top: 2px;
+}
+
+/* Bottom Nav */
+.bottomNav {
+  padding: 12px;
+}
+
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-top: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.profileAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  flex-shrink: 0;
+}
+
+.profileInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profileName {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileEmail {
+  font-size: 0.6875rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  background: #fee2e2;
+  border: none;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoutBtn:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
+.logoutIcon {
+  width: 18px;
+  height: 18px;
+  color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .logo {
+    padding: 20px;
+  }
+
+  .logoIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logoIconSvg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 12px;
+  }
+
+  .navSection {
+    flex-direction: row;
+  }
+
+  .navSectionLabel {
+    display: none;
+  }
+
+  .navItem {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .helpSection {
+    display: none;
+  }
+
+  .profileSection {
+    display: none;
+  }
+}

@@ -1,0 +1,81 @@
+.row {
+  transition: background 0.15s;
+}
+
+.row:hover {
+  background: #f8fafc;
+}
+
+.td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input:disabled {
+  background: #f8fafc;
+  cursor: default;
+}
+
+.numberInput {
+  width: 100px;
+}
+
+.total {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deleteButton:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  transform: scale(1.05);
+}
+
+.deleteButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .numberInput {
+    width: 80px;
+  }
+
+  .td {
+    padding: 12px 10px;
+  }
+}

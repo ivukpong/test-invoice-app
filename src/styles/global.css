@@ -1,0 +1,416 @@
+/* Global styles - Professional & Clean */
+
+:root {
+  --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-grey-light: #f1f5f9;
+  --color-grey: #e2e8f0;
+  --color-grey-dark: #64748b;
+  --color-text: #1e293b;
+  --color-accent: #0f172a;
+  --color-accent-soft: #f1f5f9;
+  --max-width: 1400px;
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.07);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --radius-base: 12px;
+  --radius-lg: 16px;
+  --transition-base: 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-accent);
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+button {
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: var(--transition-base);
+}
+
+input, textarea, select {
+  font-family: var(--font-family-base);
+  border: 2px solid var(--color-grey);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-base);
+  padding: 12px 16px;
+  font-size: 14px;
+  width: 100%;
+  transition: var(--transition-base);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Main Container - Improved Spacing */
+.main-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 40px 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+  gap: 40px;
+}
+
+.left-side {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.right-side {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-content: start;
+}
+
+/* Form Styles - Improved Spacing */
+.invoice-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  padding: 32px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-grey-dark);
+}
+
+/* Invoice Table - Improved Spacing */
+.invoice-table {
+  padding: 32px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Note Field - Improved Spacing */
+.note-field {
+  padding: 32px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.note-section {
+  margin-bottom: 24px;
+}
+
+.signature-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid var(--color-grey);
+}
+
+.signer-name {
+  margin-top: 12px;
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+.signer-name strong {
+  color: var(--color-accent);
+}
+
+/* Signature Pad - Improved Spacing */
+.signature-pad {
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Invoice Preview - Improved Spacing */
+.invoice-preview {
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Invoice Summary - Improved Spacing */
+.invoice-summary {
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Export Actions - Improved Spacing */
+.export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Table Styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+}
+
+.table th {
+  text-align: left;
+  padding: 14px 16px;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-bottom: 2px solid var(--color-grey);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-grey-light);
+  color: var(--color-text);
+}
+
+/* Cards */
+.card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-grey);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-soft);
+  transition: var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-base);
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-primary:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-base);
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-secondary:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main-container {
+    grid-template-columns: 1fr;
+    padding: 32px 24px;
+  }
+
+  .invoice-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    padding: 24px 20px;
+    gap: 28px;
+  }
+
+  .left-side,
+  .right-side {
+    gap: 28px;
+  }
+
+  .invoice-form,
+  .invoice-table,
+  .note-field,
+  .signature-pad,
+  .invoice-preview,
+  .invoice-summary,
+  .export-actions {
+    padding: 24px 20px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 14px;
+    font-size: 0.8125rem;
+  }
+
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.125rem; }
+}
+
+@media (max-width: 640px) {
+  .main-container {
+    padding: 20px 16px;
+    gap: 24px;
+  }
+
+  .left-side,
+  .right-side {
+    gap: 24px;
+  }
+
+  .invoice-form,
+  .invoice-table,
+  .note-field,
+  .signature-pad,
+  .invoice-preview,
+  .invoice-summary,
+  .export-actions {
+    padding: 20px 16px;
+    border-radius: var(--radius-base);
+  }
+
+  .invoice-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 600px;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 0.75rem;
+  }
+
+  button,
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 20px;
+    font-size: 0.875rem;
+    width: 100%;
+  }
+
+  input, textarea, select {
+    padding: 10px 14px;
+    font-size: 0.875rem;
+  }
+
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding: 16px 12px;
+  }
+
+  .invoice-form,
+  .invoice-table,
+  .note-field,
+  .signature-pad,
+  .invoice-preview,
+  .invoice-summary,
+  .export-actions {
+    padding: 16px 12px;
+  }
+
+  .card {
+    padding: 20px 16px;
+  }
+
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
