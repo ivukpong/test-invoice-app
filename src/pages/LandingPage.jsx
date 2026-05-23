@@ -38,7 +38,7 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
       description: "Access your invoices anywhere. Works perfectly on desktop, tablet, and mobile devices.",
     },
     {
-      icon: FileCheck,
+      icon: Star,
       title: "Secure & Private",
       description: "Your data is encrypted and secure. We prioritize your privacy and data protection.",
     },
