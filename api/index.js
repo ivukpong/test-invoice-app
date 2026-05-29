@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 import { initDb } from "../server/db.js";
 import app from "../server/index.js";
 
@@ -7,4 +6,3 @@ import app from "../server/index.js";
 await initDb();
 
 export default app;
-BACKEND COMMENTED OUT FOR UX WORK */

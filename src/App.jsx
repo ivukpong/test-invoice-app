@@ -25,6 +25,9 @@ import LandingPage from "./pages/LandingPage";
 import RequestsPage from "./pages/RequestsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NegotiationDetailsPage from "./pages/NegotiationDetailsPage";
+import Homepage from "./pages/Homepage";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 function App() {
   const [profile, setProfile] = useState(() => {
@@ -37,7 +40,8 @@ function App() {
 
   const [page, setPage] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("id") || params.get("request_id") || params.get("rfq")) return "main";
+    if (params.get("id") || params.get("request_id") || params.get("rfq"))
+      return "main";
     return "landing";
   });
   const [isGuestMode, setIsGuestMode] = useState(false);
@@ -45,6 +49,7 @@ function App() {
   const [loadedInvoiceStatus, setLoadedInvoiceStatus] = useState(null);
   const [rfqId, setRfqId] = useState(null);
   const [totalInvoices, setTotalInvoices] = useState(null);
+  const [profileStats, setProfileStats] = useState({});
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("onboardingComplete");
   });
@@ -85,6 +90,12 @@ function App() {
 
   useEffect(() => {
     refreshInvoiceCount();
+    if (profile?.id) {
+      fetch(`${API_BASE_URL}/api/profile/${profile.id}/stats`)
+        .then((r) => (r.ok ? r.json() : {}))
+        .then((stats) => setProfileStats(stats))
+        .catch(() => {});
+    }
   }, [profile?.id]);
 
   useEffect(() => {
@@ -113,7 +124,7 @@ function App() {
       const params = new URLSearchParams(window.location.search);
       const idParam = params.get("id");
       if (!idParam) return;
-      
+
       getInvoiceById(idParam)
         .then((row) => {
           const p = row?.payload;
@@ -148,8 +159,8 @@ function App() {
         .catch((err) => console.error("Failed to load invoice:", err));
     };
 
-    window.addEventListener('popstate', handleUrlChange);
-    return () => window.removeEventListener('popstate', handleUrlChange);
+    window.addEventListener("popstate", handleUrlChange);
+    return () => window.removeEventListener("popstate", handleUrlChange);
   }, []);
 
   useEffect(() => {
@@ -159,19 +170,19 @@ function App() {
       setRfqId(rfqParam);
       setPage("rfq");
     }
-    
+
     // Handle request data from Requests page
-    const requestId = params.get('request_id');
+    const requestId = params.get("request_id");
     if (requestId) {
-      const requestNumber = params.get('request_number');
-      const title = params.get('title');
-      const requesterName = params.get('requester_name');
-      const requesterEmail = params.get('requester_email');
-      const poNumber = params.get('po_number');
-      const materials = JSON.parse(params.get('materials') || '[]');
-      const pricing = JSON.parse(params.get('pricing') || '[]');
-      const taxRate = parseFloat(params.get('tax_rate') || '0');
-      
+      const requestNumber = params.get("request_number");
+      const title = params.get("title");
+      const requesterName = params.get("requester_name");
+      const requesterEmail = params.get("requester_email");
+      const poNumber = params.get("po_number");
+      const materials = JSON.parse(params.get("materials") || "[]");
+      const pricing = JSON.parse(params.get("pricing") || "[]");
+      const taxRate = parseFloat(params.get("tax_rate") || "0");
+
       // Pre-fill invoice form with request data
       setInvoice((prev) => ({
         ...prev,
@@ -180,10 +191,10 @@ function App() {
         notes: title ? `Request: ${title}\nPO: ${poNumber}` : prev.notes,
         tax: taxRate || prev.tax,
       }));
-      
+
       // Create items from materials with pricing
       const items = materials.map((material) => {
-        const priceItem = pricing.find(p => p.materialId === material.id);
+        const priceItem = pricing.find((p) => p.materialId === material.id);
         return {
           id: material.id,
           description: material.name,
@@ -196,7 +207,7 @@ function App() {
       setPage("main");
       return;
     }
-    
+
     const idParam = params.get("id");
     if (!idParam) return;
     getInvoiceById(idParam)
@@ -314,17 +325,24 @@ function App() {
   }
 
   // Show sidebar for logged-in users on app pages (not for guests)
-  const showSidebarNav = profile && page !== "landing" && page !== "login" && page !== "register";
+  const showSidebarNav =
+    profile && page !== "landing" && page !== "login" && page !== "register";
   const showHeader = !profile && (page === "main" || page === "rfq");
 
   // Show onboarding overlay (skip for guest mode)
-  if (showOnboarding && !isGuestMode && (page === "main" || page === "invoices" || page === "requests" || page === "negotiations" || page === "negotiation-details")) {
+  if (
+    showOnboarding &&
+    !isGuestMode &&
+    (page === "main" ||
+      page === "invoices" ||
+      page === "requests" ||
+      page === "negotiations" ||
+      page === "negotiation-details")
+  ) {
     return (
       <>
         <Onboarding onComplete={handleCompleteOnboarding} currentPage={page} />
-        <div style={{ pointerEvents: "none" }}>
-          {renderContent()}
-        </div>
+        <div style={{ pointerEvents: "none" }}>{renderContent()}</div>
       </>
     );
   }
@@ -389,6 +407,23 @@ function App() {
             setShowOnboarding(true);
             setPage("main");
           }}
+        />
+      );
+    }
+
+    if (page === "home") {
+      return profile ? (
+        <Homepage
+          profile={profile}
+          onCreateInvoice={() => setPage("main")}
+          onViewInvoices={() => setPage("invoices")}
+          onViewRequests={() => setPage("requests")}
+        />
+      ) : (
+        <LoginPage
+          onLogin={handleLogin}
+          onRegister={() => setPage("register")}
+          onGuest={handleGuest}
         />
       );
     }
@@ -459,10 +494,13 @@ function App() {
             hideNavLinks={true}
           />
         )}
-        <div className="main-container" style={{ 
-          paddingTop: showHeader ? "100px" : "40px",
-          gap: "40px",
-        }}>
+        <div
+          className="main-container"
+          style={{
+            paddingTop: showHeader ? "100px" : "40px",
+            gap: "40px",
+          }}
+        >
           <div className="left-side" style={{ gap: "32px" }}>
             <InvoiceForm
               invoice={invoice}
@@ -471,7 +509,8 @@ function App() {
                 const file = e.target.files?.[0];
                 if (!file) return;
                 const reader = new FileReader();
-                reader.onload = (event) => setLogo(event.target?.result || null);
+                reader.onload = (event) =>
+                  setLogo(event.target?.result || null);
                 reader.readAsDataURL(file);
               }}
               viewOnly={!!receivedInvoiceId && loadedInvoiceStatus !== "draft"}
@@ -487,23 +526,29 @@ function App() {
                 Notes
                 <textarea
                   value={invoice.notes}
-                  onChange={(e) => setInvoice({ ...invoice, notes: e.target.value })}
-                  disabled={!!receivedInvoiceId && loadedInvoiceStatus !== "draft"}
+                  onChange={(e) =>
+                    setInvoice({ ...invoice, notes: e.target.value })
+                  }
+                  disabled={
+                    !!receivedInvoiceId && loadedInvoiceStatus !== "draft"
+                  }
                 />
               </label>
             </div>
-          <SignaturePad
-            ref={sigRef}
-            onEnd={() => {
-              const dataUrl = sigRef.current?.toDataURL();
-              if (dataUrl && dataUrl.length > 100) {
-                setSignature(dataUrl);
+            <SignaturePad
+              ref={sigRef}
+              onEnd={() => {
+                const dataUrl = sigRef.current?.toDataURL();
+                if (dataUrl && dataUrl.length > 100) {
+                  setSignature(dataUrl);
+                }
+              }}
+              signerName={invoice.signerName}
+              onSignerNameChange={(e) =>
+                setInvoice({ ...invoice, signerName: e.target.value })
               }
-            }}
-            signerName={invoice.signerName}
-            onSignerNameChange={(e) => setInvoice({ ...invoice, signerName: e.target.value })}
-            viewOnly={!!receivedInvoiceId && loadedInvoiceStatus !== "draft"}
-          />
+              viewOnly={!!receivedInvoiceId && loadedInvoiceStatus !== "draft"}
+            />
           </div>
 
           <div className="right-side" style={{ gap: "32px" }}>
@@ -528,12 +573,17 @@ function App() {
               tax={invoice.tax}
               profile={profile}
               receivedInvoiceId={receivedInvoiceId}
-              existingDraftId={loadedInvoiceStatus === "draft" ? receivedInvoiceId : null}
+              existingDraftId={
+                loadedInvoiceStatus === "draft" ? receivedInvoiceId : null
+              }
               rfqId={rfqId}
               onSaved={(saved) => {
                 refreshInvoiceCount();
                 if (saved?.invoice_number) {
-                  setInvoice((prev) => ({ ...prev, invoice_number: saved.invoice_number }));
+                  setInvoice((prev) => ({
+                    ...prev,
+                    invoice_number: saved.invoice_number,
+                  }));
                 }
               }}
               onLogin={() => setPage("login")}

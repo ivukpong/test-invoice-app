@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -11,6 +10,7 @@ import profileRoutes from "./routes/profiles.js";
 import notificationRoutes from "./routes/notifications.js";
 import negotiationRoutes from "./routes/negotiations.js";
 import authRoutes from "./routes/auth.js";
+import requestRoutes from "./routes/requests.js";
 import { sendWhatsApp } from "./whatsapp.js";
 
 const app = express();
@@ -295,6 +295,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/negotiate", negotiationRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/requests", requestRoutes);
 
 async function start() {
   await initDb();
@@ -315,4 +316,3 @@ if (process.argv[1] === __filename) {
     process.exit(1);
   });
 }
-BACKEND COMMENTED OUT FOR UX WORK */

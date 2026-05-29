@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 import express from "express";
 import bcrypt from "bcryptjs";
 import { supabase } from "../db.js";
@@ -127,4 +126,3 @@ router.post("/buildos-link", async (req, res) => {
 });
 
 export default router;
-BACKEND COMMENTED OUT FOR UX WORK */

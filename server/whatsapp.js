@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 /**
  * WhatsApp notifications via Twilio
  * Optional — all calls are no-ops when env vars are not set.
@@ -35,4 +34,3 @@ export async function sendWhatsApp(to, body) {
     console.warn("[WhatsApp] Notification failed:", err.message);
   }
 }
-BACKEND COMMENTED OUT FOR UX WORK */

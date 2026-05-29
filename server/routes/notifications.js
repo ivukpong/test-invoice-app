@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 import express from "express";
 import { supabase } from "../db.js";
 const router = express.Router();
@@ -26,4 +25,3 @@ router.patch("/:id/read", async (req, res) => {
 });
 
 export default router;
-BACKEND COMMENTED OUT FOR UX WORK */

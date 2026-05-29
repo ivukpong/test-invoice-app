@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 import express from "express";
 import { supabase } from "../db.js";
 import { notifyProfiles } from "../notify.js";
@@ -105,5 +104,32 @@ router.patch("/:id/reject", async (req, res) => {
   res.json(neg);
 });
 
+// GET /api/negotiate/:id/messages — fetch the message thread for a negotiation
+router.get("/:id/messages", async (req, res) => {
+  const { data, error } = await supabase
+    .from("negotiation_messages")
+    .select("*, profiles(name, company, role)")
+    .eq("negotiation_id", req.params.id)
+    .order("created_at", { ascending: true });
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
+// POST /api/negotiate/:id/messages — send a message in a negotiation thread
+router.post("/:id/messages", async (req, res) => {
+  const { sender_profile_id, content } = req.body;
+  if (!sender_profile_id || !content) {
+    return res
+      .status(400)
+      .json({ error: "sender_profile_id and content are required" });
+  }
+  const { data, error } = await supabase
+    .from("negotiation_messages")
+    .insert([{ negotiation_id: req.params.id, sender_profile_id, content }])
+    .select()
+    .single();
+  if (error) return res.status(400).json({ error: error.message });
+  res.status(201).json(data);
+});
+
 export default router;
-BACKEND COMMENTED OUT FOR UX WORK */

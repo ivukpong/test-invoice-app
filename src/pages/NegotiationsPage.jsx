@@ -2,56 +2,19 @@ import { useState, useEffect } from "react";
 import { MessageSquare, CheckCircle2, XCircle, Clock, Eye } from "lucide-react";
 import styles from "./NegotiationsPage.module.css";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+const NEGOTIATION_STATUSES = new Set([
+  "negotiating",
+  "accepted",
+  "rejected",
+  "quote_submitted",
+]);
+
 export default function NegotiationsPage({ profile }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Mock data since backend is commented out
-  const MOCK_NEGOTIATIONS = [
-    {
-      id: 1,
-      invoice_number: "INV-2026-003",
-      client_email: "accounts@business.com",
-      sender_company_name: "Consulting Pro",
-      total: 500000,
-      currency: "NGN",
-      status: "negotiating",
-      created_at: "2026-01-13T09:15:00Z",
-      payload: {
-        clientName: "Bob Johnson",
-        clientCompanyName: "Enterprise Corp",
-      },
-    },
-    {
-      id: 4,
-      invoice_number: "INV-2026-004",
-      client_email: "finance@corp.com",
-      sender_company_name: "Services Ltd",
-      total: 350000,
-      currency: "NGN",
-      status: "accepted",
-      created_at: "2026-01-12T11:30:00Z",
-      payload: {
-        clientName: "Alice Williams",
-        clientCompanyName: "Global Tech",
-      },
-    },
-    {
-      id: 5,
-      invoice_number: "INV-2026-005",
-      client_email: "billing@startup.com",
-      sender_company_name: "Freelancer",
-      total: 120000,
-      currency: "NGN",
-      status: "rejected",
-      created_at: "2026-01-11T16:45:00Z",
-      payload: {
-        clientName: "Charlie Brown",
-        clientCompanyName: "Startup Inc",
-      },
-    },
-  ];
 
   useEffect(() => {
     if (!profile?.id) {
@@ -59,12 +22,24 @@ export default function NegotiationsPage({ profile }) {
       return;
     }
 
-    // Simulate loading negotiations (backend is commented out)
     setLoading(true);
-    setTimeout(() => {
-      setInvoices(MOCK_NEGOTIATIONS);
-      setLoading(false);
-    }, 800);
+    setError(null);
+
+    fetch(`${API_BASE_URL}/api/invoices/by-profile/${profile.id}?limit=50`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load (${res.status})`);
+        return res.json();
+      })
+      .then(({ invoices: data }) => {
+        setInvoices(
+          (data || []).filter((inv) => NEGOTIATION_STATUSES.has(inv.status)),
+        );
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [profile?.id]);
 
   function openInvoice(id) {
@@ -99,9 +74,24 @@ export default function NegotiationsPage({ profile }) {
   }
 
   const statusConfig = {
-    negotiating: { label: "Negotiating", color: "#fef9c3", textColor: "#854d0e", icon: Clock },
-    accepted: { label: "Accepted", color: "#d1fae5", textColor: "#065f46", icon: CheckCircle2 },
-    rejected: { label: "Rejected", color: "#fee2e2", textColor: "#991b1b", icon: XCircle },
+    negotiating: {
+      label: "Negotiating",
+      color: "#fef9c3",
+      textColor: "#854d0e",
+      icon: Clock,
+    },
+    accepted: {
+      label: "Accepted",
+      color: "#d1fae5",
+      textColor: "#065f46",
+      icon: CheckCircle2,
+    },
+    rejected: {
+      label: "Rejected",
+      color: "#fee2e2",
+      textColor: "#991b1b",
+      icon: XCircle,
+    },
   };
 
   return (
@@ -167,7 +157,10 @@ export default function NegotiationsPage({ profile }) {
                     {status && (
                       <span
                         className={styles.statusBadge}
-                        style={{ background: status.color, color: status.textColor }}
+                        style={{
+                          background: status.color,
+                          color: status.textColor,
+                        }}
                       >
                         <StatusIcon size={14} />
                         {status.label}

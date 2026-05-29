@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 import { supabase } from "./db.js";
 import nodemailer from "nodemailer";
 
@@ -37,6 +36,4 @@ export async function notifyProfiles(profileIds, invoiceId, type, message) {
       text: `Hi ${p.name}\n\n${message}\n\nLog in to view details.`,
     });
   }
-}
-BACKEND COMMENTED OUT FOR UX WORK */
 }

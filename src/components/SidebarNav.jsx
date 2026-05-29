@@ -1,4 +1,72 @@
-import { Home, FileText, Inbox, MessageSquare, User, Settings, LogOut, HelpCircle, Sparkles, Send, Download, Edit, Trash2, Plus, Check, X, ChevronRight, ChevronLeft, Pause, Play, MoreVertical, Bell, Search, Filter, Calendar, DollarSign, Building, Mail, Phone, MapPin, Globe, CreditCard, Clock, AlertCircle, Info, CheckCircle, XCircle, Menu, ArrowLeft, Upload, Image, PenTool, Eye, Save, Share2, Printer, FileSpreadsheet, MessageCircle, ThumbsUp, ThumbsDown, RotateCcw, Zap, Star, Heart, Shield, Lock, Unlock, Eye as EyeIcon, EyeOff, Moon, Sun, Monitor, Smartphone, Tablet, CheckCircle2, AlertTriangle, XOctagon } from "lucide-react";
+import {
+  Home,
+  FileText,
+  Inbox,
+  MessageSquare,
+  User,
+  Settings,
+  LogOut,
+  HelpCircle,
+  Sparkles,
+  Send,
+  Download,
+  Edit,
+  Trash2,
+  Plus,
+  Check,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  Pause,
+  Play,
+  MoreVertical,
+  Bell,
+  Search,
+  Filter,
+  Calendar,
+  DollarSign,
+  Building,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  CreditCard,
+  Clock,
+  AlertCircle,
+  Info,
+  CheckCircle,
+  XCircle,
+  Menu,
+  ArrowLeft,
+  Upload,
+  Image,
+  PenTool,
+  Eye,
+  Save,
+  Share2,
+  Printer,
+  FileSpreadsheet,
+  MessageCircle,
+  ThumbsUp,
+  ThumbsDown,
+  RotateCcw,
+  Zap,
+  Star,
+  Heart,
+  Shield,
+  Lock,
+  Unlock,
+  Eye as EyeIcon,
+  EyeOff,
+  Moon,
+  Sun,
+  Monitor,
+  Smartphone,
+  Tablet,
+  CheckCircle2,
+  AlertTriangle,
+  XOctagon,
+} from "lucide-react";
 import styles from "./SidebarNav.module.css";
 
 export default function SidebarNav({
@@ -9,10 +77,21 @@ export default function SidebarNav({
   invoiceCount,
 }) {
   const navItems = [
+    { id: "home", label: "Home", icon: Home, badge: null },
     { id: "main", label: "Create Invoice", icon: Plus, badge: null },
-    { id: "invoices", label: "My Invoices", icon: FileText, badge: invoiceCount },
+    {
+      id: "invoices",
+      label: "My Invoices",
+      icon: FileText,
+      badge: invoiceCount,
+    },
     { id: "requests", label: "Requests", icon: Inbox, badge: null },
-    { id: "negotiations", label: "Negotiations", icon: MessageSquare, badge: null },
+    {
+      id: "negotiations",
+      label: "Negotiations",
+      icon: MessageSquare,
+      badge: null,
+    },
   ];
 
   const bottomItems = [
@@ -23,7 +102,12 @@ export default function SidebarNav({
   return (
     <aside className={styles.sidebar}>
       {/* Logo */}
-      <div className={styles.logo} onClick={() => onNavigate("main")} role="button" tabIndex={0}>
+      <div
+        className={styles.logo}
+        onClick={() => onNavigate("main")}
+        role="button"
+        tabIndex={0}
+      >
         <img src="/logo-full.png" alt="sabiquot" className={styles.logoImage} />
       </div>
 
@@ -81,10 +165,16 @@ export default function SidebarNav({
               {profile.name?.charAt(0).toUpperCase() || "U"}
             </div>
             <div className={styles.profileInfo}>
-              <span className={styles.profileName}>{profile.name || profile.email}</span>
+              <span className={styles.profileName}>
+                {profile.name || profile.email}
+              </span>
               <span className={styles.profileEmail}>{profile.email}</span>
             </div>
-            <button className={styles.logoutBtn} onClick={onLogout} title="Logout">
+            <button
+              className={styles.logoutBtn}
+              onClick={onLogout}
+              title="Logout"
+            >
               <LogOut className={styles.logoutIcon} />
             </button>
           </div>

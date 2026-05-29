@@ -1,58 +1,27 @@
 import { useState, useEffect } from "react";
-import { FileText, Edit, Download, Trash2, Search, Plus, Filter, ChevronDown, CheckCircle2, Clock, XCircle, Archive } from "lucide-react";
+import {
+  FileText,
+  Edit,
+  Download,
+  Trash2,
+  Search,
+  Plus,
+  Filter,
+  ChevronDown,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Archive,
+} from "lucide-react";
 import styles from "./InvoicesPage.module.css";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const CATEGORIES = [
   { id: "all", label: "All Invoices", icon: FileText, count: null },
   { id: "drafts", label: "Drafts", icon: Edit, count: null },
   { id: "saved", label: "Saved", icon: CheckCircle2, count: null },
   { id: "submitted", label: "Submitted", icon: Clock, count: null },
-];
-
-// Mock data since backend is commented out
-const MOCK_INVOICES = [
-  {
-    id: 1,
-    invoice_number: "INV-2026-001",
-    client_email: "client@example.com",
-    sender_company_name: "Acme Corp",
-    total: 150000,
-    currency: "NGN",
-    status: "saved",
-    created_at: "2026-01-15T10:30:00Z",
-    payload: {
-      clientName: "John Doe",
-      clientCompanyName: "Tech Solutions Ltd",
-    },
-  },
-  {
-    id: 2,
-    invoice_number: "INV-2026-002",
-    client_email: "billing@company.com",
-    sender_company_name: "Design Studio",
-    total: 250000,
-    currency: "NGN",
-    status: "draft",
-    created_at: "2026-01-14T14:20:00Z",
-    payload: {
-      clientName: "Jane Smith",
-      clientCompanyName: "Marketing Inc",
-    },
-  },
-  {
-    id: 3,
-    invoice_number: "INV-2026-003",
-    client_email: "accounts@business.com",
-    sender_company_name: "Consulting Pro",
-    total: 500000,
-    currency: "NGN",
-    status: "quote_submitted",
-    created_at: "2026-01-13T09:15:00Z",
-    payload: {
-      clientName: "Bob Johnson",
-      clientCompanyName: "Enterprise Corp",
-    },
-  },
 ];
 
 export default function InvoicesPage({ profile, onNavigate }) {
@@ -69,17 +38,26 @@ export default function InvoicesPage({ profile, onNavigate }) {
       return;
     }
 
-    // Simulate loading invoices (backend is commented out)
     setLoading(true);
-    setTimeout(() => {
-      setInvoices(MOCK_INVOICES);
-      setLoading(false);
-    }, 800);
+    setError(null);
+    fetch(`${API_BASE_URL}/api/invoices/by-profile/${profile.id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load invoices (${res.status})`);
+        return res.json();
+      })
+      .then((data) => {
+        setInvoices(Array.isArray(data) ? data : (data.invoices ?? []));
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [profile?.id]);
 
   function openInvoice(id) {
-    window.history.pushState({}, '', `/?id=${id}`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.history.pushState({}, "", `/?id=${id}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
   function formatAmount(amount, currency) {
@@ -109,13 +87,48 @@ export default function InvoicesPage({ profile, onNavigate }) {
   }
 
   const statusConfig = {
-    saved: { label: "Saved", color: "#dcfce7", textColor: "#166534", icon: CheckCircle2 },
-    draft: { label: "Draft", color: "#f1f5f9", textColor: "#475569", icon: Edit },
-    negotiating: { label: "Negotiating", color: "#fef9c3", textColor: "#854d0e", icon: Clock },
-    accepted: { label: "Approved", color: "#d1fae5", textColor: "#065f46", icon: CheckCircle2 },
-    rejected: { label: "Rejected", color: "#fee2e2", textColor: "#991b1b", icon: XCircle },
-    quote_submitted: { label: "Submitted", color: "#dbeafe", textColor: "#1e40af", icon: Clock },
-    finalized: { label: "Finalized", color: "#e0e7ff", textColor: "#3730a3", icon: CheckCircle2 },
+    saved: {
+      label: "Saved",
+      color: "#dcfce7",
+      textColor: "#166534",
+      icon: CheckCircle2,
+    },
+    draft: {
+      label: "Draft",
+      color: "#f1f5f9",
+      textColor: "#475569",
+      icon: Edit,
+    },
+    negotiating: {
+      label: "Negotiating",
+      color: "#fef9c3",
+      textColor: "#854d0e",
+      icon: Clock,
+    },
+    accepted: {
+      label: "Approved",
+      color: "#d1fae5",
+      textColor: "#065f46",
+      icon: CheckCircle2,
+    },
+    rejected: {
+      label: "Rejected",
+      color: "#fee2e2",
+      textColor: "#991b1b",
+      icon: XCircle,
+    },
+    quote_submitted: {
+      label: "Submitted",
+      color: "#dbeafe",
+      textColor: "#1e40af",
+      icon: Clock,
+    },
+    finalized: {
+      label: "Finalized",
+      color: "#e0e7ff",
+      textColor: "#3730a3",
+      icon: CheckCircle2,
+    },
   };
 
   const filteredInvoices = invoices.filter((inv) => {
@@ -123,19 +136,25 @@ export default function InvoicesPage({ profile, onNavigate }) {
       selectedCategory === "all"
         ? true
         : selectedCategory === "saved"
-        ? inv.status === "saved" || !inv.status
-        : selectedCategory === "drafts"
-        ? inv.status === "draft"
-        : selectedCategory === "submitted"
-        ? inv.status === "quote_submitted"
-        : selectedCategory === "archived"
-        ? inv.status === "archived"
-        : true;
+          ? inv.status === "saved" || !inv.status
+          : selectedCategory === "drafts"
+            ? inv.status === "draft"
+            : selectedCategory === "submitted"
+              ? inv.status === "quote_submitted"
+              : selectedCategory === "archived"
+                ? inv.status === "archived"
+                : true;
 
     const matchesSearch = searchQuery
-      ? (inv.invoice_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (inv.client_email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (inv.sender_company_name || "").toLowerCase().includes(searchQuery.toLowerCase())
+      ? (inv.invoice_number || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        (inv.client_email || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        (inv.sender_company_name || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
       : true;
 
     return matchesCategory && matchesSearch;
@@ -159,7 +178,7 @@ export default function InvoicesPage({ profile, onNavigate }) {
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <h2 className={styles.sidebarTitle}>Invoices</h2>
-          <button 
+          <button
             className={styles.helpButton}
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
@@ -169,7 +188,8 @@ export default function InvoicesPage({ profile, onNavigate }) {
           </button>
           {showTooltip && (
             <div className={styles.tooltip}>
-              Filter your invoices by status. Click on any category to view invoices in that status.
+              Filter your invoices by status. Click on any category to view
+              invoices in that status.
             </div>
           )}
         </div>
@@ -194,7 +214,8 @@ export default function InvoicesPage({ profile, onNavigate }) {
           <div className={styles.tipCard}>
             <span className={styles.tipIcon}>💡</span>
             <p className={styles.tipText}>
-              Click on any invoice to view or edit it. Drafts can be modified anytime.
+              Click on any invoice to view or edit it. Drafts can be modified
+              anytime.
             </p>
           </div>
         </div>
@@ -206,10 +227,12 @@ export default function InvoicesPage({ profile, onNavigate }) {
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <h1 className={styles.pageTitle}>
-              {CATEGORIES.find((c) => c.id === selectedCategory)?.label || "Invoices"}
+              {CATEGORIES.find((c) => c.id === selectedCategory)?.label ||
+                "Invoices"}
             </h1>
             <span className={styles.resultCount}>
-              {filteredInvoices.length} {filteredInvoices.length === 1 ? "invoice" : "invoices"}
+              {filteredInvoices.length}{" "}
+              {filteredInvoices.length === 1 ? "invoice" : "invoices"}
             </span>
           </div>
 
@@ -224,10 +247,10 @@ export default function InvoicesPage({ profile, onNavigate }) {
                 className={styles.searchInput}
               />
             </div>
-            <button 
+            <button
               className={styles.createButton}
               onClick={() => {
-                window.history.pushState({}, '', '/');
+                window.history.pushState({}, "", "/");
                 if (onNavigate) onNavigate("main");
                 else window.location.href = "/";
               }}
@@ -244,7 +267,8 @@ export default function InvoicesPage({ profile, onNavigate }) {
             <div className={styles.emptyIcon}>🔐</div>
             <h3 className={styles.emptyTitle}>Sign in to view invoices</h3>
             <p className={styles.emptyText}>
-              Create an account or sign in to access your saved invoices and manage them easily.
+              Create an account or sign in to access your saved invoices and
+              manage them easily.
             </p>
           </div>
         )}
@@ -271,14 +295,14 @@ export default function InvoicesPage({ profile, onNavigate }) {
               {searchQuery
                 ? `No results for "${searchQuery}". Try a different search term.`
                 : selectedCategory !== "all"
-                ? `You don't have any ${selectedCategory} invoices yet.`
-                : "Create your first invoice to get started!"}
+                  ? `You don't have any ${selectedCategory} invoices yet.`
+                  : "Create your first invoice to get started!"}
             </p>
             {!searchQuery && selectedCategory === "all" && (
-              <button 
+              <button
                 className={styles.createButtonLarge}
                 onClick={() => {
-                  window.history.pushState({}, '', '/');
+                  window.history.pushState({}, "", "/");
                   if (onNavigate) onNavigate("main");
                   else window.location.href = "/";
                 }}
@@ -319,7 +343,9 @@ export default function InvoicesPage({ profile, onNavigate }) {
                         {inv.payload?.clientName || inv.client_email || "—"}
                       </td>
                       <td className={styles.td}>
-                        {inv.payload?.clientCompanyName || inv.sender_company_name || "—"}
+                        {inv.payload?.clientCompanyName ||
+                          inv.sender_company_name ||
+                          "—"}
                       </td>
                       <td className={styles.td}>
                         <span className={styles.amount}>
@@ -327,9 +353,12 @@ export default function InvoicesPage({ profile, onNavigate }) {
                         </span>
                       </td>
                       <td className={styles.td}>
-                        <span 
+                        <span
                           className={styles.statusBadge}
-                          style={{ background: status.color, color: status.textColor }}
+                          style={{
+                            background: status.color,
+                            color: status.textColor,
+                          }}
                         >
                           <StatusIcon size={14} />
                           {status.label}

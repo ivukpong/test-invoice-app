@@ -1,4 +1,3 @@
-/* BACKEND COMMENTED OUT FOR UX WORK
 export { supabase };
 import pg from "pg";
 import { createClient } from "@supabase/supabase-js";
@@ -179,4 +178,3 @@ export async function getInvoices({ page = 1, limit = 20, profileId } = {}) {
 
   return { invoices: rowsResult.rows, total: countResult.rows[0].total };
 }
-BACKEND COMMENTED OUT FOR UX WORK */
