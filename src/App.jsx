@@ -42,6 +42,14 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("id") || params.get("request_id") || params.get("rfq"))
       return "main";
+    try {
+      const savedProfile = JSON.parse(
+        localStorage.getItem("profile") || "null",
+      );
+      if (savedProfile) return "main";
+    } catch {
+      // ignore parse errors
+    }
     return "landing";
   });
   const [isGuestMode, setIsGuestMode] = useState(false);

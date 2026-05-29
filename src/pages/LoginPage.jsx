@@ -1,18 +1,35 @@
 import { useState } from "react";
 import styles from "./LoginPage.module.css";
 
+const API = import.meta.env.VITE_API_BASE_URL || "";
+
 export default function LoginPage({ onLogin, onRegister, onGuest }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      onLogin({ id: "user-123", email, name: email.split("@")[0] });
+    setError("");
+    try {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Login failed. Please check your credentials.");
+        return;
+      }
+      onLogin(data);
+    } catch {
+      setError("Could not reach the server. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -20,6 +37,8 @@ export default function LoginPage({ onLogin, onRegister, onGuest }) {
       <div className={styles.card}>
         <h1 className={styles.title}>Sign In</h1>
         <p className={styles.subtitle}>Access your account</p>
+
+        {error && <p className={styles.error}>{error}</p>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>
@@ -60,7 +79,10 @@ export default function LoginPage({ onLogin, onRegister, onGuest }) {
         </form>
 
         <p className={styles.footer}>
-          New user? <button onClick={onRegister} className={styles.register}>Create an account</button>
+          New user?{" "}
+          <button onClick={onRegister} className={styles.register}>
+            Create an account
+          </button>
         </p>
       </div>
     </div>
