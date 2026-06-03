@@ -221,16 +221,16 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
         <h2 className={styles.sectionTitle}>Watch How It Works</h2>
         <div className={styles.videoContainer}>
           <div className={styles.videoWrapper}>
-            <iframe
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-              title="Invoice Tutorial"
-              className={styles.videoIframe}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+            <div className={styles.videoComingSoon} role="status" aria-live="polite">
+              <h3>Video Coming Soon</h3>
+              <p>
+                We are preparing a new walkthrough focused on how SabiQuote works
+                and the key benefits for your business.
+              </p>
+            </div>
           </div>
           <p className={styles.videoCaption}>
-            Learn how to create, manage, and negotiate invoices in minutes
+            A product-specific tutorial will be published soon
           </p>
         </div>
       </section>

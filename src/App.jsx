@@ -29,6 +29,14 @@ import Homepage from "./pages/Homepage";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
+const sanitizeInvoiceData = (data) => {
+  if (!data || typeof data !== "object") return data;
+  return {
+    ...data,
+    senderPhone: (data.senderPhone || "").replace(/\D/g, ""),
+  };
+};
+
 function App() {
   const [profile, setProfile] = useState(() => {
     try {
@@ -512,7 +520,7 @@ function App() {
           <div className="left-side" style={{ gap: "32px" }}>
             <InvoiceForm
               invoice={invoice}
-              onChange={(data) => setInvoice(data)}
+              onChange={(data) => setInvoice(sanitizeInvoiceData(data))}
               onLogoChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
