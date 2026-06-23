@@ -41,7 +41,6 @@ export default function Header({
             <div className={`${styles.navCenter} ${hideNavLinks ? styles.hidden : ""}`}>
               <a href="#features" className={styles.navLink}>Features</a>
               <a href="#how-it-works" className={styles.navLink}>How It Works</a>
-              <a href="#tutorials" className={styles.navLink}>Tutorials</a>
               <a href="#faqs" className={styles.navLink}>FAQs</a>
             </div>
           )}
@@ -84,7 +83,6 @@ export default function Header({
         <div className={styles.mobileMenu}>
           <a href="#features" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>Features</a>
           <a href="#how-it-works" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>How It Works</a>
-          <a href="#tutorials" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>Tutorials</a>
           <a href="#faqs" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>FAQs</a>
           <div className={styles.mobileMenuDivider}></div>
           {profile ? (

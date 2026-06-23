@@ -86,7 +86,6 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
           <div className={styles.navLinks}>
             <a href="#features" className={styles.navLink}>Features</a>
             <a href="#how-it-works" className={styles.navLink}>How It Works</a>
-            <a href="#tutorials" className={styles.navLink}>Tutorials</a>
             <a href="#faqs" className={styles.navLink}>FAQs</a>
           </div>
           <div className={styles.navActions}>
@@ -213,25 +212,6 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
             <h3>Send or Download</h3>
             <p>Export as PDF, send via email, or save for later</p>
           </div>
-        </div>
-      </section>
-
-      {/* Video Tutorial Section */}
-      <section id="tutorials" className={styles.tutorials}>
-        <h2 className={styles.sectionTitle}>Watch How It Works</h2>
-        <div className={styles.videoContainer}>
-          <div className={styles.videoWrapper}>
-            <iframe
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-              title="Invoice Tutorial"
-              className={styles.videoIframe}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-          <p className={styles.videoCaption}>
-            Learn how to create, manage, and negotiate invoices in minutes
-          </p>
         </div>
       </section>
 
