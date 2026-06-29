@@ -1,14 +1,15 @@
 /* Global styles - Professional & Clean */
 
 :root {
-  --font-family-base: "Avenir", "Nunito Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-base:
+    "Avenir", "Nunito Sans", -apple-system, BlinkMacSystemFont, sans-serif;
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-grey-light: #f1f5f9;
   --color-grey: #e2e8f0;
   --color-grey-dark: #64748b;
-  --color-text: #1A1A2E;
-  --color-accent: #1A1A2E;
+  --color-text: #1a1a2e;
+  --color-accent: #1a1a2e;
   --color-accent-soft: #f1f5f9;
   --max-width: 1400px;
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.07);
@@ -36,17 +37,30 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
   font-weight: 800;
   line-height: 1.2;
   color: var(--color-accent);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
+h1 {
+  font-size: 2.5rem;
+}
+h2 {
+  font-size: 2rem;
+}
+h3 {
+  font-size: 1.5rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
 
 button {
   font-family: var(--font-family-base);
@@ -56,7 +70,9 @@ button {
   transition: var(--transition-base);
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: var(--font-family-base);
   border: 2px solid var(--color-grey);
   background: var(--color-surface);
@@ -68,7 +84,9 @@ input, textarea, select {
   transition: var(--transition-base);
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
@@ -254,7 +272,7 @@ label {
 }
 
 .btn-primary:hover {
-  background: #1A1A2E;
+  background: #1a1a2e;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
 }
@@ -326,9 +344,15 @@ label {
     font-size: 0.8125rem;
   }
 
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.125rem; }
+  h1 {
+    font-size: 1.75rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.125rem;
+  }
 }
 
 @media (max-width: 640px) {
@@ -381,14 +405,22 @@ label {
     width: 100%;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     padding: 10px 14px;
     font-size: 0.875rem;
   }
 
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
-  h3 { font-size: 1rem; }
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+  }
+  h3 {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -410,9 +442,31 @@ label {
     padding: 20px 16px;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     font-size: 16px; /* Prevents zoom on iOS */
   }
 }
 
+/* =====================
+   App Root Layout
+   ===================== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
 
+.app-main {
+  flex: 1;
+  min-width: 0; /* prevent flex child overflow */
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  .app-main--sidebar {
+    margin-left: 0 !important;
+  }
+}

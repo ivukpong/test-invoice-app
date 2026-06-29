@@ -22,12 +22,21 @@ import InvoicesPage from "./pages/InvoicesPage";
 import NegotiationsPage from "./pages/NegotiationsPage";
 import RFQPage from "./pages/RFQPage";
 import LandingPage from "./pages/LandingPage";
+import LegalPage from "./pages/LegalPage";
 import RequestsPage from "./pages/RequestsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NegotiationDetailsPage from "./pages/NegotiationDetailsPage";
 import Homepage from "./pages/Homepage";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+const sanitizeInvoiceData = (data) => {
+  if (!data || typeof data !== "object") return data;
+  return {
+    ...data,
+    senderPhone: (data.senderPhone || "").replace(/\D/g, ""),
+  };
+};
 
 function App() {
   const [profile, setProfile] = useState(() => {
@@ -40,8 +49,19 @@ function App() {
 
   const [page, setPage] = useState(() => {
     const params = new URLSearchParams(window.location.search);
+    const legal = params.get("legal");
+    if (legal && ["terms", "privacy", "kyc", "commission"].includes(legal))
+      return legal;
     if (params.get("id") || params.get("request_id") || params.get("rfq"))
       return "main";
+    try {
+      const savedProfile = JSON.parse(
+        localStorage.getItem("profile") || "null",
+      );
+      if (savedProfile) return "main";
+    } catch {
+      // ignore parse errors
+    }
     return "landing";
   });
   const [isGuestMode, setIsGuestMode] = useState(false);
@@ -356,7 +376,18 @@ function App() {
             setPage("main");
           }}
           onLogin={() => setPage("login")}
+          onNavigate={(p) => setPage(p)}
           invoiceCount={totalInvoices}
+        />
+      );
+    }
+
+    if (["terms", "privacy", "kyc", "commission"].includes(page)) {
+      return (
+        <LegalPage
+          slug={page}
+          onBack={() => setPage(profile ? "main" : "landing")}
+          onNavigate={(p) => setPage(p)}
         />
       );
     }
@@ -504,7 +535,7 @@ function App() {
           <div className="left-side" style={{ gap: "32px" }}>
             <InvoiceForm
               invoice={invoice}
-              onChange={(data) => setInvoice(data)}
+              onChange={(data) => setInvoice(sanitizeInvoiceData(data))}
               onLogoChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -599,7 +630,7 @@ function App() {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-layout">
       {showSidebarNav && (
         <SidebarNav
           currentPage={page}
@@ -610,9 +641,9 @@ function App() {
         />
       )}
       <main
+        className={showSidebarNav ? "app-main app-main--sidebar" : "app-main"}
         style={{
-          flex: 1,
-          marginLeft: showSidebarNav ? "280px" : showHeader ? "0" : "0",
+          marginLeft: showSidebarNav ? "280px" : "0",
           transition: "margin-left 0.3s",
         }}
       >

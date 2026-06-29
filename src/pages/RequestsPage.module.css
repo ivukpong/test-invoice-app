@@ -24,13 +24,13 @@
 }
 
 .sidebarIcon {
-  color: #FFFA71;
+  color: #fffa71;
 }
 
 .sidebarTitle {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0;
   display: flex;
   align-items: center;
@@ -64,11 +64,11 @@
 
 .navItem:hover {
   background: #f1f5f9;
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .navItemActive {
-  background: #1A1A2E;
+  background: #1a1a2e;
   color: #fff;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -79,7 +79,7 @@
 }
 
 .infoCard {
-  background: #1A1A2E;
+  background: #1a1a2e;
   border: 1px solid #fcd34d;
   border-radius: 14px;
   padding: 16px;
@@ -125,7 +125,7 @@
 .pageTitle {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0;
 }
 
@@ -153,7 +153,7 @@
 }
 
 .searchBox:focus-within {
-  border-color: #FFFA71;
+  border-color: #fffa71;
 }
 
 .searchBox svg {
@@ -168,7 +168,7 @@
   width: 240px;
   background: transparent;
   font-family: inherit;
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .refreshButton {
@@ -177,7 +177,7 @@
   gap: 8px;
   padding: 12px 20px;
   background: #fff;
-  color: #1A1A2E;
+  color: #1a1a2e;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   font-size: 0.9375rem;
@@ -187,8 +187,8 @@
 }
 
 .refreshButton:hover {
-  border-color: #FFFA71;
-  color: #FFFA71;
+  border-color: #fffa71;
+  color: #fffa71;
   background: #f8fafc;
 }
 
@@ -197,7 +197,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #1A1A2E;
+  background: #1a1a2e;
   border: 2px solid #fcd34d;
   border-radius: 14px;
   padding: 16px 20px;
@@ -229,14 +229,16 @@
   width: 48px;
   height: 48px;
   border: 4px solid #e2e8f0;
-  border-top-color: #FFFA71;
+  border-top-color: #fffa71;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loadingState p {
@@ -282,7 +284,7 @@
 .emptyTitle {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0 0 12px 0;
 }
 
@@ -331,7 +333,7 @@
 .requestNumber {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .statusBadge {
@@ -359,8 +361,8 @@
 }
 
 .expandButton:hover {
-  border-color: #FFFA71;
-  color: #FFFA71;
+  border-color: #fffa71;
+  color: #fffa71;
 }
 
 .cardBody {
@@ -370,7 +372,7 @@
 .requestTitle {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0 0 20px 0;
 }
 
@@ -396,7 +398,7 @@
 
 .metaValue {
   font-size: 0.9375rem;
-  color: #1A1A2E;
+  color: #1a1a2e;
   font-weight: 600;
 }
 
@@ -414,7 +416,7 @@
 .sectionTitle {
   font-size: 1rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0 0 16px 0;
   padding-bottom: 12px;
   border-bottom: 2px solid #e2e8f0;
@@ -439,7 +441,7 @@
 
 .infoValue {
   font-size: 0.9375rem;
-  color: #1A1A2E;
+  color: #1a1a2e;
   font-weight: 500;
 }
 
@@ -461,7 +463,7 @@
   text-align: left;
   padding: 14px 16px;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;
   font-size: 0.75rem;
@@ -477,7 +479,7 @@
 
 .tableBold {
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .priceInput {
@@ -492,7 +494,7 @@
 
 .priceInput:focus {
   outline: none;
-  border-color: #FFFA71;
+  border-color: #fffa71;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -509,7 +511,7 @@
   justify-content: center;
   gap: 10px;
   padding: 16px;
-  background: #1A1A2E;
+  background: #1a1a2e;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -554,7 +556,7 @@
   justify-content: center;
   gap: 10px;
   padding: 16px;
-  background: #1A1A2E;
+  background: #1a1a2e;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -604,7 +606,7 @@
 
 .quickFillInput:focus {
   outline: none;
-  border-color: #FFFA71;
+  border-color: #fffa71;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -639,7 +641,7 @@
 
 .taxRateInput:focus {
   outline: none;
-  border-color: #FFFA71;
+  border-color: #fffa71;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -675,7 +677,7 @@
 
 .totalLabelGrand {
   font-size: 1rem;
-  color: #1A1A2E;
+  color: #1a1a2e;
   font-weight: 700;
 }
 
@@ -687,12 +689,12 @@
 
 .totalValueGrand {
   font-size: 1.25rem;
-  color: #1A1A2E;
+  color: #1a1a2e;
   font-weight: 800;
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 1280px) {
   .container {
     flex-direction: column;
   }

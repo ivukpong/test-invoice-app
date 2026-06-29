@@ -1,13 +1,28 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown, ChevronUp, Zap, Shield, Smartphone, MessageCircle, BarChart3, Star } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Shield,
+  Smartphone,
+  MessageCircle,
+  BarChart3,
+  Star,
+} from "lucide-react";
 import ParticleBackground from "../components/ParticleBackground";
 import styles from "./LandingPage.module.css";
 
-export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
+export default function LandingPage({
+  onGetStarted,
+  onLogin,
+  onNavigate,
+  invoiceCount,
+}) {
   const [activeFaq, setActiveFaq] = useState(null);
 
   const handleGetStarted = () => {
-    window.history.pushState({}, '', '/');
+    window.history.pushState({}, "", "/");
     onGetStarted();
   };
 
@@ -15,64 +30,83 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
     {
       icon: BarChart3,
       title: "Create Invoices",
-      description: "Build professional invoices in minutes with our intuitive builder. No accounting knowledge required.",
+      description:
+        "Build professional invoices in minutes with our intuitive builder. No accounting knowledge required.",
     },
     {
       icon: MessageCircle,
       title: "Track Everything",
-      description: "Monitor all your invoices, requests, and negotiations from one centralized dashboard.",
+      description:
+        "Monitor all your invoices, requests, and negotiations from one centralized dashboard.",
     },
     {
       icon: Zap,
       title: "Negotiate Easily",
-      description: "Communicate with clients directly through the platform. Negotiate terms and close deals faster.",
+      description:
+        "Communicate with clients directly through the platform. Negotiate terms and close deals faster.",
     },
     {
       icon: Smartphone,
       title: "Smart Notifications",
-      description: "Never miss an update. Get notified about invoice status changes, requests, and messages.",
+      description:
+        "Never miss an update. Get notified about invoice status changes, requests, and messages.",
     },
     {
       icon: Shield,
       title: "Mobile Friendly",
-      description: "Access your invoices anywhere. Works perfectly on desktop, tablet, and mobile devices.",
+      description:
+        "Access your invoices anywhere. Works perfectly on desktop, tablet, and mobile devices.",
     },
     {
       icon: Star,
       title: "Secure & Private",
-      description: "Your data is encrypted and secure. We prioritize your privacy and data protection.",
+      description:
+        "Your data is encrypted and secure. We prioritize your privacy and data protection.",
     },
   ];
 
   const faqs = [
     {
       question: "Is this really free?",
-      answer: "Yes! Our core invoice creation and management features are completely free. You can create unlimited invoices without any cost.",
+      answer:
+        "Yes! Our core invoice creation and management features are completely free. You can create unlimited invoices without any cost.",
     },
     {
       question: "Do I need accounting knowledge?",
-      answer: "Not at all! Our platform is designed for everyone. We guide you through each step with helpful tips and explanations.",
+      answer:
+        "Not at all! Our platform is designed for everyone. We guide you through each step with helpful tips and explanations.",
     },
     {
       question: "Can I customize my invoices?",
-      answer: "Absolutely! Add your logo, customize colors, include notes, and tailor every invoice to match your brand.",
+      answer:
+        "Absolutely! Add your logo, customize colors, include notes, and tailor every invoice to match your brand.",
     },
     {
       question: "How do I receive invoice requests?",
-      answer: "If your company uses our ERP integration, invoice requests will appear automatically in your Requests page. Review and convert them to invoices with one click.",
+      answer:
+        "If your company uses our ERP integration, invoice requests will appear automatically in your Requests page. Review and convert them to invoices with one click.",
     },
     {
       question: "Can I negotiate invoice amounts?",
-      answer: "Yes! Our Negotiation feature lets you communicate with clients, propose different amounts, and reach agreements directly in the platform.",
+      answer:
+        "Yes! Our Negotiation feature lets you communicate with clients, propose different amounts, and reach agreements directly in the platform.",
     },
     {
       question: "What formats can I export in?",
-      answer: "Download invoices as PDF, export data to Excel, or send directly via email. Multiple formats for different needs.",
+      answer:
+        "Download invoices as PDF, export data to Excel, or send directly via email. Multiple formats for different needs.",
     },
   ];
 
   const logos = [
-    "Buyops", "Urbco", "BuildOS", "Uptipro", "SImpli", "Raycast", "DooSign", "Bloom"
+    "Buyops",
+    "Urbco",
+    "BuildOS",
+    "Uptipro",
+    "SImpli",
+    "Raycast",
+    "DooSign",
+    "Bloom",
   ];
 
   return (
@@ -81,16 +115,31 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
       <nav className={styles.nav}>
         <div className={styles.navContainer}>
           <div className={styles.logo}>
-            <img src="/logo-full.png" alt="sabiquot" className={styles.logoImage} />
+            <img
+              src="/logo-full.png"
+              alt="sabiquot"
+              className={styles.logoImage}
+            />
           </div>
           <div className={styles.navLinks}>
-            <a href="#features" className={styles.navLink}>Features</a>
-            <a href="#how-it-works" className={styles.navLink}>How It Works</a>
-            <a href="#faqs" className={styles.navLink}>FAQs</a>
+            <a href="#features" className={styles.navLink}>
+              Features
+            </a>
+            <a href="#how-it-works" className={styles.navLink}>
+              How It Works
+            </a>
+            <a href="#tutorials" className={styles.navLink}>
+              Tutorials
+            </a>
+            <a href="#faqs" className={styles.navLink}>
+              FAQs
+            </a>
           </div>
           <div className={styles.navActions}>
             <div className={styles.invoiceCount}>
-              <span className={styles.invoiceCountNumber}>{(invoiceCount || 10000).toLocaleString()}+</span>
+              <span className={styles.invoiceCountNumber}>
+                {(invoiceCount || 10000).toLocaleString()}+
+              </span>
               <span className={styles.invoiceCountLabel}>Invoices Created</span>
             </div>
             <button className={styles.signInButton} onClick={onLogin}>
@@ -106,19 +155,23 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
       {/* Hero Section with Particle Animation */}
       <section className={styles.hero}>
         <ParticleBackground />
-        
+
         <div className={styles.heroContent}>
           <div className={styles.heroBadge}>
             <Star size={14} />
             <span>Trusted by 10,000+ businesses</span>
           </div>
           <h1 className={styles.heroTitle}>
-            Rebooting the<br />
-            <span className={styles.heroTitleHighlight}>Invoice Experience.</span>
+            Rebooting the
+            <br />
+            <span className={styles.heroTitleHighlight}>
+              Invoice Experience.
+            </span>
           </h1>
           <p className={styles.heroSubtitle}>
-            We're not building another invoicing platform. We're building a place where businesses thrive.
-            Create, manage, and negotiate invoices effortlessly.
+            We're not building another invoicing platform. We're building a
+            place where businesses thrive. Create, manage, and negotiate
+            invoices effortlessly.
           </p>
           <div className={styles.heroButtons}>
             <button className={styles.heroPrimary} onClick={handleGetStarted}>
@@ -133,7 +186,9 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
         {/* Stats */}
         <div className={styles.stats}>
           <div className={styles.stat}>
-            <span className={styles.statNumber}>{(invoiceCount || 10000).toLocaleString()}+</span>
+            <span className={styles.statNumber}>
+              {(invoiceCount || 10000).toLocaleString()}+
+            </span>
             <span className={styles.statLabel}>Invoices Created</span>
           </div>
           <div className={styles.statDivider}></div>
@@ -215,6 +270,29 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
         </div>
       </section>
 
+      {/* Video Tutorial Section */}
+      <section id="tutorials" className={styles.tutorials}>
+        <h2 className={styles.sectionTitle}>Watch How It Works</h2>
+        <div className={styles.videoContainer}>
+          <div className={styles.videoWrapper}>
+            <div
+              className={styles.videoComingSoon}
+              role="status"
+              aria-live="polite"
+            >
+              <h3>Video Coming Soon</h3>
+              <p>
+                We are preparing a new walkthrough focused on how SabiQuote
+                works and the key benefits for your business.
+              </p>
+            </div>
+          </div>
+          <p className={styles.videoCaption}>
+            A product-specific tutorial will be published soon
+          </p>
+        </div>
+      </section>
+
       {/* FAQs */}
       <section id="faqs" className={styles.faqs}>
         <h2 className={styles.sectionTitle}>Frequently Asked Questions</h2>
@@ -256,6 +334,37 @@ export default function LandingPage({ onGetStarted, onLogin, invoiceCount }) {
 
       {/* Footer */}
       <footer className={styles.footer}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: "20px",
+            marginBottom: "12px",
+          }}
+        >
+          {[
+            { slug: "terms", label: "Terms & Conditions" },
+            { slug: "privacy", label: "Privacy Policy" },
+            { slug: "kyc", label: "KYC Policy" },
+            { slug: "commission", label: "Commission Policy" },
+          ].map((l) => (
+            <button
+              key={l.slug}
+              onClick={() => onNavigate?.(l.slug)}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "inherit",
+                opacity: 0.85,
+                cursor: "pointer",
+                fontSize: "0.9rem",
+              }}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
         <p>© 2026 sabiquot. Built for businesses everywhere.</p>
       </footer>
     </div>

@@ -34,7 +34,7 @@
   gap: 10px;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .logoImage {
@@ -58,7 +58,7 @@
 }
 
 .navLink:hover {
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .navActions {
@@ -79,7 +79,7 @@
 .invoiceCountNumber {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
   line-height: 1.2;
 }
 
@@ -92,7 +92,7 @@
 
 .signInButton {
   background: transparent;
-  color: #1A1A2E;
+  color: #1a1a2e;
   border: 1px solid #e5e5e5;
   border-radius: 999px;
   padding: 10px 20px;
@@ -103,14 +103,14 @@
 }
 
 .signInButton:hover {
-  background: #1A1A2E;
+  background: #1a1a2e;
   color: #fff;
-  border-color: #1A1A2E;
+  border-color: #1a1a2e;
 }
 
 .signUpButton {
-  background: #1A1A2E;
-  color: #FFFA71;
+  background: #1a1a2e;
+  color: #fffa71;
   border: none;
   border-radius: 999px;
   padding: 10px 20px;
@@ -154,7 +154,7 @@
   align-items: center;
   gap: 8px;
   background: #fff;
-  color: #1A1A2E;
+  color: #1a1a2e;
   padding: 8px 16px;
   border-radius: 24px;
   font-size: 0.8125rem;
@@ -174,7 +174,7 @@
 }
 
 .heroTitleHighlight {
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 .heroSubtitle {
@@ -194,8 +194,8 @@
 }
 
 .heroPrimary {
-  background: #1A1A2E;
-  color: #FFFA71;
+  background: #1a1a2e;
+  color: #fffa71;
   border: none;
   border-radius: 999px;
   padding: 16px 32px;
@@ -216,7 +216,7 @@
 
 .heroSecondary {
   background: #fff;
-  color: #1A1A2E;
+  color: #1a1a2e;
   border: 1px solid #e5e5e5;
   border-radius: 999px;
   padding: 16px 32px;
@@ -227,7 +227,7 @@
 }
 
 .heroSecondary:hover {
-  border-color: #1A1A2E;
+  border-color: #1a1a2e;
   background: #f5f5f5;
 }
 
@@ -257,7 +257,7 @@
 .statNumber {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1A1A2E;
+  color: #1a1a2e;
   letter-spacing: -0.02em;
 }
 
@@ -320,7 +320,7 @@
 }
 
 .logoItem:hover {
-  color: #1A1A2E;
+  color: #1a1a2e;
 }
 
 /* Features Section */
@@ -335,7 +335,7 @@
 .sectionTitle {
   font-size: 2.5rem;
   font-weight: 600;
-  color: #1A1A2E;
+  color: #1a1a2e;
   text-align: center;
   margin: 0 0 12px 0;
   letter-spacing: -0.02em;
@@ -364,7 +364,7 @@
 }
 
 .featureCard:hover {
-  border-color: #1A1A2E;
+  border-color: #1a1a2e;
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
@@ -372,7 +372,7 @@
 .featureIconWrapper {
   width: 48px;
   height: 48px;
-  background: #1A1A2E;
+  background: #1a1a2e;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -389,7 +389,7 @@
 .featureTitle {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0 0 12px 0;
   letter-spacing: -0.01em;
 }
@@ -430,7 +430,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #1A1A2E;
+  background: #1a1a2e;
   color: #fff;
   display: flex;
   align-items: center;
@@ -443,7 +443,7 @@
 .step h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1A1A2E;
+  color: #1a1a2e;
   margin: 0 0 12px 0;
 }
 
@@ -480,7 +480,7 @@
 
 /* CTA Section */
 .cta {
-  background: #1A1A2E;
+  background: #1a1a2e;
   padding: 100px 32px;
   text-align: center;
   width: 100%;
@@ -488,6 +488,66 @@
 }
 
 /* Video Section */
+.videoContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.videoWrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.videoIframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.videoComingSoon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #e5e5e5;
+  background: linear-gradient(135deg, #f7f7f7 0%, #ffffff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.videoComingSoon h3 {
+  margin: 0 0 12px;
+  color: #1a1a2e;
+  font-size: 1.25rem;
+}
+
+.videoComingSoon p {
+  margin: 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 520px;
+}
+
+.videoCaption {
+  font-size: 0.9375rem;
+  color: #666;
+  margin-top: 20px;
+}
+
 /* FAQs */
 .faqs {
   max-width: 800px;
@@ -514,7 +574,7 @@
 }
 
 .faqActive {
-  border-color: #1A1A2E;
+  border-color: #1a1a2e;
 }
 
 .faqQuestion {
@@ -528,7 +588,7 @@
   cursor: pointer;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #1A1A2E;
+  color: #1a1a2e;
   text-align: left;
   transition: all 0.2s;
 }
@@ -556,7 +616,7 @@
 
 /* CTA Section */
 .cta {
-  background: #1A1A2E;
+  background: #1a1a2e;
   padding: 100px 32px;
   text-align: center;
 }
@@ -576,9 +636,9 @@
 }
 
 .ctaButton {
-  background: #1A1A2E;
-  color: #FFFA71;
-  border: 2px solid #FFFA71;
+  background: #1a1a2e;
+  color: #fffa71;
+  border: 2px solid #fffa71;
   border-radius: 999px;
   padding: 18px 48px;
   font-size: 1rem;
@@ -588,8 +648,8 @@
 }
 
 .ctaButton:hover {
-  background: #FFFA71;
-  color: #1A1A2E;
+  background: #fffa71;
+  color: #1a1a2e;
   transform: translateY(-3px);
   box-shadow: 0 8px 32px rgba(255, 250, 113, 0.2);
 }
