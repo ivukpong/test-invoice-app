@@ -26,8 +26,14 @@ app.use(
     legacyHeaders: false,
   }),
 );
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+// ALLOWED_ORIGINS is the canonical name; CORS_ORIGIN is accepted because that
+// is what .env / .env.example have always used.
+const originList = process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGIN;
+const allowedOrigins = originList
+  ? originList
+      .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean)
   : ["http://localhost:5173"];
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use((_req, res, next) => {
@@ -298,6 +304,21 @@ app.use("/api/negotiate", negotiationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/buildos-webhook", buildosRoutes);
+
+// Unknown API routes and unhandled errors must still answer with JSON — the
+// client parses every response as JSON and an HTML error page reads to it as
+// "the server is unreachable".
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "Endpoint not found" });
+});
+
+// Express identifies error middleware by its four-parameter signature.
+// eslint-disable-next-line no-unused-vars
+app.use((error, _req, res, _next) => {
+  console.error("Unhandled API error", error);
+  if (res.headersSent) return;
+  res.status(500).json({ error: "Unexpected server error." });
+});
 
 async function start() {
   await initDb();

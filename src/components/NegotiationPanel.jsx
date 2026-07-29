@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL as API } from "../utils/apiClient";
 
 const STATUS_COLORS = {
   pending: { bg: "#fef9c3", text: "#854d0e", border: "#fef08a" },

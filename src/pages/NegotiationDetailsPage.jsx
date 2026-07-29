@@ -17,7 +17,7 @@ import {
 } from "../utils/invoiceGenerator";
 import styles from "./NegotiationDetailsPage.module.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL } from "../utils/apiClient";
 
 export default function NegotiationDetailsPage({ profile, onNavigate }) {
   const [negotiationId, setNegotiationId] = useState(null);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL } from "../utils/apiClient";
 
 export default function RFQPage({ profile, currentRfqId }) {
   const [submittedQuotes, setSubmittedQuotes] = useState([]);
