@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import styles from "./InvoicesPage.module.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL } from "../utils/apiClient";
 
 const CATEGORIES = [
   { id: "all", label: "All Invoices", icon: FileText, count: null },

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import styles from "./RequestsPage.module.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL } from "../utils/apiClient";
 
 export default function RequestsPage({ profile }) {
   const [requests, setRequests] = useState([]);

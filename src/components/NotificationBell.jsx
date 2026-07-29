@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL as API } from "../utils/apiClient";
 
 export default function NotificationBell({ profileId }) {
   const [notes, setNotes] = useState([]);

@@ -1,5 +1,5 @@
 // Empty string = relative URLs (works on Vercel). Explicit value used in local dev via .env.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL } from "./apiClient";
 
 export async function getInvoices({ page = 1, limit = 20 } = {}) {
   const response = await fetch(

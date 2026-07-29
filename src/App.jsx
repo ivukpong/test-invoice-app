@@ -28,7 +28,7 @@ import SettingsPage from "./pages/SettingsPage";
 import NegotiationDetailsPage from "./pages/NegotiationDetailsPage";
 import Homepage from "./pages/Homepage";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import { API_BASE_URL } from "./utils/apiClient";
 
 const sanitizeInvoiceData = (data) => {
   if (!data || typeof data !== "object") return data;

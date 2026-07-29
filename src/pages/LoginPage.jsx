@@ -1,7 +1,6 @@
 import { useState } from "react";
 import styles from "./LoginPage.module.css";
-
-const API = import.meta.env.VITE_API_BASE_URL || "";
+import { postJson } from "../utils/apiClient";
 
 export default function LoginPage({ onLogin, onRegister, onGuest }) {
   const [email, setEmail] = useState("");
@@ -14,19 +13,10 @@ export default function LoginPage({ onLogin, onRegister, onGuest }) {
     setIsLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed. Please check your credentials.");
-        return;
-      }
+      const data = await postJson("/api/auth/login", { email, password });
       onLogin(data);
-    } catch {
-      setError("Could not reach the server. Please try again.");
+    } catch (err) {
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
