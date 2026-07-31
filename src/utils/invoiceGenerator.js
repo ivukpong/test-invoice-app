@@ -757,5 +757,11 @@ export function generateInvoicePdfDataUrl(template, data) {
 }
 
 export function downloadInvoicePdf(template, data) {
-  buildDoc(template, data).save(`${data.invoiceNumber || "invoice-draft"}.pdf`);
+  // An invoice number can contain "/" or ":", which are illegal in a filename —
+  // the browser rejects the download silently, so nothing appears to happen.
+  const safeNumber = String(data.invoiceNumber || "invoice-draft").replace(
+    /[\\/:*?"<>|]/g,
+    "-",
+  );
+  buildDoc(template, data).save(`${safeNumber}.pdf`);
 }

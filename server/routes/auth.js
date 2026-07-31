@@ -36,6 +36,83 @@ function requireSupabase(res) {
   return false;
 }
 
+/**
+ * Vendor-side roles that Procurement raises purchase orders against, and which
+ * therefore belong in the BuildOS supplier list.
+ *
+ * This used to require `role === "supplier"` exactly. The registration form
+ * offers a vendor three roles — buyer, supplier and contractor — and *defaults
+ * the select to "buyer"*, so a vendor who registered as a contractor, or who
+ * simply left the role untouched, was silently never synced. That is why vendor
+ * accounts created on SabiQuot did not appear in Procurement.
+ *
+ * "buyer" stays excluded deliberately: that is a procurement-side account, not
+ * somebody being purchased from.
+ */
+const SUPPLYING_ROLES = new Set(["supplier", "contractor"]);
+
+function isSupplierProfile(profile) {
+  return (
+    profile?.category === "vendor" &&
+    SUPPLYING_ROLES.has(String(profile?.role ?? "").trim().toLowerCase())
+  );
+}
+
+/**
+ * Push a supplier profile to BuildOS Procurement so it appears in the
+ * Suppliers list, and persist the resulting link. Covers both fresh
+ * registrations and pre-existing accounts that predate this sync (they pick
+ * up the link the next time they log in). Never throws — a sync failure must
+ * not block registration/login, it's recorded on the profile so it can be
+ * retried or surfaced to an admin.
+ */
+async function syncSupplierToBuildos(profile) {
+  if (!isBuildosConfigured() || !isSupplierProfile(profile) || profile.buildos_supplier_id) {
+    return profile;
+  }
+
+  try {
+    const supplier = await buildosFetch("/suppliers/sync-from-portal", {
+      method: "POST",
+      body: {
+        sabiquotProfileId: profile.id,
+        name: profile.company || profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        contactPerson: profile.name,
+      },
+    });
+
+    const { data: updated, error } = await supabase
+      .from("profiles")
+      .update({
+        buildos_supplier_id: supplier.id,
+        buildos_sync_status: "linked",
+        buildos_sync_error: null,
+        buildos_synced_at: new Date().toISOString(),
+      })
+      .eq("id", profile.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Failed to persist BuildOS supplier link:", error.message);
+      return profile;
+    }
+    return updated;
+  } catch (err) {
+    console.error("BuildOS supplier sync failed:", err.message);
+    await supabase
+      .from("profiles")
+      .update({ buildos_sync_status: "failed", buildos_sync_error: err.message })
+      .eq("id", profile.id)
+      .then(null, (updateErr) =>
+        console.error("Failed to record BuildOS sync failure:", updateErr.message),
+      );
+    return profile;
+  }
+}
+
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
   const { name, email, password, phone, role, category, company } = req.body;
@@ -107,7 +184,8 @@ router.post("/register", async (req, res) => {
     }
 
     const { password_hash: _ph, ...safe } = data;
-    return res.status(201).json(safe);
+    const synced = await syncSupplierToBuildos(safe);
+    return res.status(201).json(synced);
   } catch (error) {
     return dbUnavailable(res, error);
   }
@@ -140,7 +218,8 @@ router.post("/login", async (req, res) => {
     if (!data.password_hash) {
       // Legacy profile (no password) — allow login by email only for backward compat
       const { password_hash: _ph, ...safe } = data;
-      return res.json(safe);
+      const synced = await syncSupplierToBuildos(safe);
+      return res.json(synced);
     }
 
     const match = await bcrypt.compare(password, data.password_hash);
@@ -149,7 +228,8 @@ router.post("/login", async (req, res) => {
     }
 
     const { password_hash: _ph, ...safe } = data;
-    return res.json(safe);
+    const synced = await syncSupplierToBuildos(safe);
+    return res.json(synced);
   } catch (error) {
     return dbUnavailable(res, error);
   }

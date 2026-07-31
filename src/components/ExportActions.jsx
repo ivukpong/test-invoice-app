@@ -34,6 +34,8 @@ export default function ExportActions({
   const [savedInvoiceId, setSavedInvoiceId] = useState(null);
   const [emailStatus, setEmailStatus] = useState("idle");
   const [emailError, setEmailError] = useState(null);
+  /** Surfaces a PDF/Excel export failure, which was previously console-only. */
+  const [exportError, setExportError] = useState(null);
 
   const buildPdfData = () => {
     const subtotal = items.reduce(
@@ -70,22 +72,44 @@ export default function ExportActions({
   };
 
   const handlePreviewPdf = () => {
-    const dataUrl = generateInvoicePdfDataUrl(template, buildPdfData());
-    setPdfDataUrl(dataUrl);
-    setPreviewSession((prev) => prev + 1);
-    setPreviewOpen(true);
+    // Rendering can throw on malformed invoice data. Unhandled, the modal never
+    // opened and nothing explained why the button appeared to do nothing.
+    try {
+      const dataUrl = generateInvoicePdfDataUrl(template, buildPdfData());
+      setPdfDataUrl(dataUrl);
+      setPreviewSession((prev) => prev + 1);
+      setPreviewOpen(true);
+      setExportError(null);
+    } catch (err) {
+      console.error("Failed to render the invoice preview", err);
+      setExportError(
+        "Could not generate the invoice preview. Please check the invoice details and try again.",
+      );
+    }
   };
 
   const handleDownloadDirect = () => {
-    const pdfData = buildPdfData();
-    downloadInvoicePdf(template, pdfData);
+    try {
+      downloadInvoicePdf(template, buildPdfData());
+      setExportError(null);
+    } catch (err) {
+      console.error("Failed to download the invoice", err);
+      setExportError("Could not generate the invoice PDF. Please try again.");
+    }
   };
 
   const handleConfirmDownload = async ({ privacyPolicyAccepted }) => {
     const newInternalNumber = generateInvoiceNumber();
     onInvoiceNumberUsed?.(newInternalNumber);
     const pdfData = buildPdfData();
-    downloadInvoicePdf(template, pdfData);
+    try {
+      downloadInvoicePdf(template, pdfData);
+      setExportError(null);
+    } catch (err) {
+      console.error("Failed to download the invoice", err);
+      setExportError("Could not generate the invoice PDF. Please try again.");
+      return;
+    }
 
     if (!privacyPolicyAccepted) {
       return;
@@ -148,10 +172,22 @@ export default function ExportActions({
       ["", "", "Total", total],
     ];
 
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Invoice");
-    XLSX.writeFile(wb, `Invoice-${invoice.number}.xlsx`);
+    try {
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Invoice");
+      // An invoice number can contain "/" or ":", which are illegal in a
+      // filename — the download was rejected by the browser without a word.
+      const safeNumber = String(invoice.number || "draft").replace(
+        /[\\/:*?"<>|]/g,
+        "-",
+      );
+      XLSX.writeFile(wb, `Invoice-${safeNumber}.xlsx`);
+      setExportError(null);
+    } catch (err) {
+      console.error("Failed to export the invoice to Excel", err);
+      setExportError("Could not export to Excel. Please try again.");
+    }
   };
 
   const handleSaveDraft = async () => {
@@ -360,6 +396,13 @@ export default function ExportActions({
               </div>
             )}
 
+            {exportError && (
+              <div className={styles.errorMessage}>
+                <AlertCircle size={18} />
+                {exportError}
+              </div>
+            )}
+
             {/* Clear Form */}
             <button className={styles.clearButton} onClick={onClear}>
               Clear Form & Start New
@@ -374,12 +417,14 @@ export default function ExportActions({
         )}
       </div>
 
+      {/* Keyed per preview so each one mounts fresh, clearing the privacy
+          checkbox from the previous preview. */}
       <PdfPreviewModal
+        key={previewSession}
         isOpen={previewOpen}
         onClose={() => setPreviewOpen(false)}
         pdfDataUrl={pdfDataUrl}
         onConfirm={handleConfirmDownload}
-        sessionKey={previewSession}
         isSaving={savingAfterDownload}
       />
     </>
