@@ -40,7 +40,19 @@ app.use((_req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
 });
-app.use(express.json({ limit: "2mb" }));
+// The raw body is retained so inbound BuildOS webhooks can be verified against
+// the exact bytes that were signed. Re-serialising the parsed object would not
+// reproduce them (key order and spacing are not guaranteed to survive a
+// JSON round-trip), which is why signature checks over JSON.stringify(req.body)
+// cannot be trusted.
+app.use(
+  express.json({
+    limit: "2mb",
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", persistence: getPersistenceMode() });

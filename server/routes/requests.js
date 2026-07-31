@@ -1,5 +1,6 @@
 import express from "express";
 import { supabase } from "../db.js";
+import { buildosFetch, isBuildosConfigured } from "../buildosClient.js";
 
 const router = express.Router();
 
@@ -46,21 +47,17 @@ router.patch("/:id/status", async (req, res) => {
 
   if (error) return res.status(400).json({ error: error.message });
 
-  // Mirror status change to BuildOS ERP
-  const buildosUrl = process.env.BUILDOS_API_URL;
-  const buildosToken = process.env.BUILDOS_API_TOKEN;
-  if (buildosUrl && buildosToken && data.buildos_ref) {
+  // Mirror status change to BuildOS ERP. A mirror failure must not fail the
+  // supplier's action — the local status change already succeeded.
+  if (isBuildosConfigured() && data.buildos_ref) {
+    const path =
+      data.buildos_event === "rfq.sent"
+        ? `/sent-rfqs/${data.buildos_ref}`
+        : `/purchase-requests/${data.buildos_ref}`;
     try {
-      await fetch(`${buildosUrl}/purchase-requests/${data.buildos_ref}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${buildosToken}`,
-        },
-        body: JSON.stringify({ status }),
-      });
+      await buildosFetch(path, { method: "PATCH", body: { status } });
     } catch (buildosErr) {
-      console.error("BuildOS status mirror failed:", buildosErr);
+      console.error("BuildOS status mirror failed:", buildosErr.message);
     }
   }
 
