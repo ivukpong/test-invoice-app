@@ -22,6 +22,21 @@ export function isBuildosConfigured() {
   return Boolean(RAW_BASE && SERVICE_KEY);
 }
 
+// Callers skip the sync entirely when this is unconfigured, which looks
+// identical to "the sync ran and did nothing". Say so once at boot so a
+// deployment missing these vars is obvious rather than being diagnosed as a
+// broken integration.
+if (!isBuildosConfigured()) {
+  const missing = [
+    !RAW_BASE && "BUILDOS_API_URL",
+    !SERVICE_KEY && "BUILDOS_SERVICE_API_KEY",
+  ].filter(Boolean);
+  console.warn(
+    `BuildOS integration disabled — ${missing.join(" and ")} not set. ` +
+      "Supplier profiles will NOT sync into BuildOS Procurement until this is configured.",
+  );
+}
+
 export class BuildosError extends Error {
   constructor(message, { status = 0, body = null } = {}) {
     super(message);
