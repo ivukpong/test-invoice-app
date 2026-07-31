@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import { supabase } from "../db.js";
+import { buildosFetch, isBuildosConfigured } from "../buildosClient.js";
 
 const router = express.Router();
 
@@ -164,21 +165,29 @@ router.post("/buildos-link", async (req, res) => {
       .json({ error: "profile_id and buildos_user_id are required" });
   }
 
-  // If a BuildOS API URL is configured, verify the user ID exists there first
-  const buildosApiUrl = process.env.BUILDOS_API_URL;
-  if (buildosApiUrl) {
+  // Best-effort existence check.
+  //
+  // This used to GET `${BUILDOS_API_URL}/users/:id` unauthenticated. No such
+  // route exists — BuildOS serves users from `/admin/users/:id` behind an admin
+  // role — so the check returned 404 for every valid id and rejected every link
+  // attempt with "BuildOS user ID not found".
+  //
+  // That endpoint is intentionally NOT opened to service keys: a supplier portal
+  // has no business enumerating ERP staff accounts. So an inconclusive check
+  // (unreachable, unauthorised, or not found) no longer blocks the link — it is
+  // logged and the pairing proceeds, matching how the unreachable case was
+  // already handled.
+  //
+  // Note this links a BuildOS *User*, i.e. an ERP staff login. Pairing a
+  // supplier to its BuildOS Supplier record is a separate concern and uses
+  // profiles.buildos_supplier_id.
+  if (isBuildosConfigured()) {
     try {
-      const checkRes = await fetch(
-        `${buildosApiUrl}/users/${buildos_user_id}`,
-        {
-          headers: { "Content-Type": "application/json" },
-        },
+      await buildosFetch(`/admin/users/${encodeURIComponent(buildos_user_id)}`);
+    } catch (checkErr) {
+      console.warn(
+        `Could not verify BuildOS user ${buildos_user_id} (${checkErr.message}) — linking anyway`,
       );
-      if (!checkRes.ok) {
-        return res.status(400).json({ error: "BuildOS user ID not found" });
-      }
-    } catch {
-      // BuildOS unreachable — skip validation, proceed with linking
     }
   }
 

@@ -1,6 +1,7 @@
 import express from "express";
 import { supabase } from "../db.js";
 import { notifyProfiles } from "../notify.js";
+import { buildosFetch, isBuildosConfigured } from "../buildosClient.js";
 const router = express.Router();
 
 // Supplier submits a counter-offer
@@ -79,43 +80,46 @@ router.patch("/:id/accept", async (req, res) => {
     console.error("notifyProfiles failed:", notifyErr);
   }
 
-  // Push accepted invoice to BuildOS ERP
-  const buildosUrl = process.env.BUILDOS_API_URL;
-  const buildosToken = process.env.BUILDOS_API_TOKEN;
-  if (buildosUrl && buildosToken) {
+  // Push the accepted amount to BuildOS as a purchase invoice.
+  //
+  // The previous payload could never be stored: it sent `amount`, `currency`
+  // and `linkedPrId`, none of which exist on BuildOS's PurchaseInvoice model
+  // (the amount column is `total`), and omitted the required `supplierName` and
+  // `invoiceDate` — so Prisma rejected every call. It also guessed the linked
+  // purchase request by taking the supplier's most recent buildos_ref, which is
+  // wrong as soon as a supplier has more than one open request.
+  if (isBuildosConfigured()) {
     try {
-      const [{ data: invoice }, { data: request }] = await Promise.all([
+      const [{ data: invoice }, { data: profile }] = await Promise.all([
         supabase
           .from("invoices")
-          .select("invoice_number, currency")
+          .select("invoice_number, currency, total")
           .eq("id", neg.invoice_id)
           .single(),
         supabase
-          .from("requests")
-          .select("buildos_ref")
-          .eq("profile_id", neg.sender_profile_id)
-          .not("buildos_ref", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(1)
+          .from("profiles")
+          .select("name, company, buildos_supplier_id")
+          .eq("id", neg.sender_profile_id)
           .maybeSingle(),
       ]);
-      await fetch(`${buildosUrl}/purchase-invoices`, {
+
+      await buildosFetch("/purchase-invoices", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${buildosToken}`,
+        body: {
+          supplierId: profile?.buildos_supplier_id || null,
+          supplierName: profile?.company || profile?.name || "Unknown supplier",
+          poRef: null,
+          invoiceDate: new Date().toISOString(),
+          lines: [],
+          subtotal: neg.proposed_total,
+          vatTotal: 0,
+          total: neg.proposed_total,
+          status: "Pending",
+          notes: `SabiQuot invoice ${invoice?.invoice_number ?? neg.invoice_id} — accepted counter-offer (${invoice?.currency || "NGN"})`,
         },
-        body: JSON.stringify({
-          supplierId: neg.sender_profile_id,
-          invoiceNo: invoice?.invoice_number,
-          amount: neg.proposed_total,
-          currency: invoice?.currency || "NGN",
-          status: "received",
-          linkedPrId: request?.buildos_ref || null,
-        }),
       });
     } catch (buildosErr) {
-      console.error("BuildOS sync failed:", buildosErr);
+      console.error("BuildOS sync failed:", buildosErr.message);
     }
   }
 
