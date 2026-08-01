@@ -25,6 +25,7 @@ import LandingPage from "./pages/LandingPage";
 import LegalPage from "./pages/LegalPage";
 import RequestsPage from "./pages/RequestsPage";
 import SettingsPage from "./pages/SettingsPage";
+import { readSettings } from "./utils/settings";
 import NegotiationDetailsPage from "./pages/NegotiationDetailsPage";
 import Homepage from "./pages/Homepage";
 
@@ -89,7 +90,7 @@ function App() {
     date: "",
     dueDate: "",
     industry: "",
-    currency: "NGN",
+    currency: readSettings().currency,
     tax: 0,
     notes: "",
     signerName: "",
@@ -290,7 +291,7 @@ function App() {
       date: "",
       dueDate: "",
       industry: "",
-      currency: "NGN",
+      currency: readSettings().currency,
       tax: 0,
       notes: "",
       signerName: "",
@@ -415,6 +416,10 @@ function App() {
       return (
         <ProfilePage
           profile={profile}
+          onProfileChange={(updated) => {
+            localStorage.setItem("profile", JSON.stringify(updated));
+            setProfile(updated);
+          }}
           onBack={() => setPage("main")}
           onRetakeTour={() => {
             localStorage.removeItem("onboardingComplete");
@@ -428,6 +433,10 @@ function App() {
       return (
         <SettingsPage
           profile={profile}
+          onProfileChange={(updated) => {
+            localStorage.setItem("profile", JSON.stringify(updated));
+            setProfile(updated);
+          }}
           onBack={() => setPage("main")}
           onRetakeTour={() => {
             localStorage.removeItem("onboardingComplete");

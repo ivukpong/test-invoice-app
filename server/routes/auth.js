@@ -293,4 +293,61 @@ router.post("/buildos-link", async (req, res) => {
   return res.json(safe);
 });
 
+
+/**
+ * POST /api/auth/change-password — changes a password in place.
+ *
+ * Backs Settings → Privacy → Change Password, which previously had no handler.
+ * Deliberately an in-place change rather than an emailed reset link: there is no
+ * reset-token storage or reset page in this app, so a "we've emailed you a link"
+ * flow would be a dead end. The current password is required, so possession of
+ * an open session is not enough on its own.
+ */
+router.post("/change-password", async (req, res) => {
+  const { profileId, currentPassword, newPassword } = req.body ?? {};
+
+  if (!profileId || !currentPassword || !newPassword) {
+    return res.status(400).json({
+      error: "profileId, currentPassword and newPassword are required",
+    });
+  }
+  if (String(newPassword).length < 8) {
+    return res
+      .status(400)
+      .json({ error: "New password must be at least 8 characters" });
+  }
+
+  if (!requireSupabase(res)) return;
+
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, password_hash")
+      .eq("id", profileId)
+      .maybeSingle();
+
+    if (error) return dbUnavailable(res, error);
+    if (!data) return res.status(404).json({ error: "Account not found" });
+
+    // A legacy profile with no password can set one without proving the old.
+    if (data.password_hash) {
+      const match = await bcrypt.compare(currentPassword, data.password_hash);
+      if (!match) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+    }
+
+    const password_hash = await bcrypt.hash(newPassword, 12);
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ password_hash })
+      .eq("id", profileId);
+
+    if (updateError) return dbUnavailable(res, updateError);
+    return res.json({ changed: true });
+  } catch (error) {
+    return dbUnavailable(res, error);
+  }
+});
+
 export default router;

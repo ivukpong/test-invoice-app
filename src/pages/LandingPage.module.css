@@ -110,7 +110,7 @@
 
 .signUpButton {
   background: #1a1a2e;
-  color: #fffa71;
+  color: var(--brand-yellow-ink);
   border: none;
   border-radius: 999px;
   padding: 10px 20px;
@@ -195,7 +195,7 @@
 
 .heroPrimary {
   background: #1a1a2e;
-  color: #fffa71;
+  color: var(--brand-yellow-ink);
   border: none;
   border-radius: 999px;
   padding: 16px 32px;
@@ -637,7 +637,7 @@
 
 .ctaButton {
   background: #1a1a2e;
-  color: #fffa71;
+  color: var(--brand-yellow-ink);
   border: 2px solid #fffa71;
   border-radius: 999px;
   padding: 18px 48px;
