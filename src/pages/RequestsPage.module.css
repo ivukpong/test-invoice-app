@@ -24,7 +24,7 @@
 }
 
 .sidebarIcon {
-  color: #fffa71;
+  color: var(--brand-yellow-ink);
 }
 
 .sidebarTitle {
@@ -153,7 +153,7 @@
 }
 
 .searchBox:focus-within {
-  border-color: #fffa71;
+  border-color: var(--brand-yellow);
 }
 
 .searchBox svg {
@@ -187,8 +187,8 @@
 }
 
 .refreshButton:hover {
-  border-color: #fffa71;
-  color: #fffa71;
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow-ink);
   background: #f8fafc;
 }
 
@@ -229,7 +229,7 @@
   width: 48px;
   height: 48px;
   border: 4px solid #e2e8f0;
-  border-top-color: #fffa71;
+  border-top-color: var(--brand-yellow-ink);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -361,8 +361,8 @@
 }
 
 .expandButton:hover {
-  border-color: #fffa71;
-  color: #fffa71;
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow-ink);
 }
 
 .cardBody {
@@ -494,7 +494,7 @@
 
 .priceInput:focus {
   outline: none;
-  border-color: #fffa71;
+  border-color: var(--brand-yellow);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -606,7 +606,7 @@
 
 .quickFillInput:focus {
   outline: none;
-  border-color: #fffa71;
+  border-color: var(--brand-yellow);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -641,7 +641,7 @@
 
 .taxRateInput:focus {
   outline: none;
-  border-color: #fffa71;
+  border-color: var(--brand-yellow);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 

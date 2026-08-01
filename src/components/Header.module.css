@@ -62,7 +62,7 @@
 }
 
 .navLink:hover {
-  color: #FFFA71;
+  color: var(--brand-yellow-ink);
 }
 
 .navRight {
@@ -107,8 +107,8 @@
 }
 
 .navButtonSecondary:hover {
-  border-color: #FFFA71;
-  color: #FFFA71;
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow-ink);
 }
 
 .navButtonPrimary {
@@ -193,7 +193,7 @@
 }
 
 .mobileNavLink:hover {
-  color: #FFFA71;
+  color: var(--brand-yellow-ink);
 }
 
 .mobileMenuDivider {

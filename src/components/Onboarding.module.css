@@ -75,8 +75,12 @@
 }
 
 .progressActive {
-  background: #FFFA71;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  /* The pale fill alone barely separated the active dot from the grey inactive
+     ones on a white card, and the glow was left over from a blue theme. An
+     outline in the ink tone makes the current step unmistakable. */
+  background: var(--brand-yellow);
+  border: 2px solid var(--brand-yellow-ink);
+  box-shadow: 0 2px 8px rgba(111, 93, 0, 0.35);
 }
 
 .tourContent {
@@ -86,7 +90,7 @@
 .stepIndicator {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #FFFA71;
+  color: var(--brand-yellow-ink);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 10px;
@@ -254,7 +258,7 @@
 
 .pauseIcon {
   margin-bottom: 24px;
-  color: #FFFA71;
+  color: var(--brand-yellow-ink);
 }
 
 .pauseTitle {

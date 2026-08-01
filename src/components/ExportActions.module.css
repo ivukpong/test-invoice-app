@@ -85,12 +85,12 @@
 }
 
 .select:hover {
-  border-color: #FFFA71;
+  border-color: var(--brand-yellow);
 }
 
 .select:focus {
   outline: none;
-  border-color: #FFFA71;
+  border-color: var(--brand-yellow);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -173,8 +173,8 @@
 }
 
 .secondaryButton:hover:not(:disabled) {
-  border-color: #FFFA71;
-  color: #FFFA71;
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow-ink);
   background: #f8fafc;
   transform: translateY(-1px);
 }
@@ -312,8 +312,8 @@
 }
 
 .guestSecondary:hover {
-  border-color: #FFFA71;
-  color: #FFFA71;
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow-ink);
   background: #f8fafc;
 }
 
