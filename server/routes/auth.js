@@ -80,6 +80,10 @@ async function syncSupplierToBuildos(profile) {
         email: profile.email,
         phone: profile.phone,
         contactPerson: profile.name,
+        // The vendor's existing Procurement supplier id, when they were given
+        // one. Lets an established vendor claim their existing supplier record
+        // instead of a duplicate being created alongside it.
+        supplierId: profile.buildos_supplier_ref || undefined,
       },
     });
 
@@ -115,7 +119,8 @@ async function syncSupplierToBuildos(profile) {
 
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
-  const { name, email, password, phone, role, category, company } = req.body;
+  const { name, email, password, phone, role, category, company, buildosSupplierId } =
+    req.body;
 
   if (!email || !password || !name) {
     return res
@@ -165,6 +170,10 @@ router.post("/register", async (req, res) => {
           role: role || (category === "vendor" ? "buyer" : "public"),
           category: category || "public",
           company: company || null,
+          // The vendor's existing Procurement supplier id, if they were given
+          // one. Kept on the profile so a later login re-attempts the link with
+          // it after a failed sync.
+          buildos_supplier_ref: String(buildosSupplierId || "").trim() || null,
           password_hash,
         },
       ])

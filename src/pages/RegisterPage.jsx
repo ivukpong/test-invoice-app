@@ -34,6 +34,7 @@ export default function RegisterPage({ onRegister, onLogin }) {
     role: "buyer",
     company: "",
     buildosUserId: "",
+    buildosSupplierId: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -76,6 +77,9 @@ export default function RegisterPage({ onRegister, onLogin }) {
         category: form.category,
         role: form.category === "vendor" ? form.role : "public",
         company: form.company.trim() || undefined,
+        // Lets an established vendor claim their existing Procurement
+        // supplier record instead of a duplicate being created.
+        buildosSupplierId: form.buildosSupplierId.trim() || undefined,
       });
 
       // Optional BuildOS account link — a failure here must not discard the
@@ -252,6 +256,21 @@ export default function RegisterPage({ onRegister, onLogin }) {
                     placeholder="Acme Ltd."
                     autoComplete="organization"
                   />
+                </Field>
+                <Field label="BuildOS Vendor ID (optional)" full>
+                  <input
+                    className={styles.input}
+                    value={form.buildosSupplierId}
+                    onChange={set("buildosSupplierId")}
+                    placeholder="Paste the supplier ID Procurement gave you"
+                    autoComplete="off"
+                  />
+                  <p className={styles.hint}>
+                    Already supply this company? Enter the vendor ID from
+                    Procurement so your existing supplier record is linked to this
+                    account instead of a duplicate being created. Leave blank if
+                    you are new.
+                  </p>
                 </Field>
                 <Field label="BuildOS User ID (optional)" full>
                   <input
