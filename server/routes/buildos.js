@@ -103,6 +103,41 @@ async function resolveProfileId(data) {
 
 const HANDLED_EVENTS = new Set(["purchase-request.created", "rfq.sent", "purchase-order.created"]);
 
+/** PostgREST codes that will never succeed on retry, however many times BuildOS resends. */
+const PERMANENT_STORAGE_CODES = new Set([
+  "PGRST204", // column not found in the schema cache
+  "PGRST100", // unparseable request
+  "42703", // undefined_column
+  "42P01", // undefined_table
+  "23502", // not_null_violation
+  "23503", // foreign_key_violation
+]);
+
+function isPermanentStorageError(error) {
+  return PERMANENT_STORAGE_CODES.has(String(error?.code ?? ""));
+}
+
+/** Specifically "this deployment has not run a migration that adds column X". */
+function isMissingColumnError(error) {
+  const code = String(error?.code ?? "");
+  return code === "PGRST204" || code === "42703";
+}
+
+/** The column name out of a PostgREST/Postgres missing-column message, if present. */
+function missingColumnName(error) {
+  const match = /'([^']+)' column/.exec(String(error?.message ?? ""));
+  return match?.[1] ?? null;
+}
+
+/** One upsert attempt, keyed on the BuildOS id for idempotency. */
+function storeRequest(row) {
+  return supabase
+    .from("requests")
+    .upsert([row], { onConflict: "buildos_ref" })
+    .select("id")
+    .single();
+}
+
 // POST /api/buildos-webhook — receives events from BuildOS ERP
 router.post("/", async (req, res) => {
   const rejection = verifySignature(req);
@@ -151,17 +186,36 @@ router.post("/", async (req, res) => {
 
   // Upsert rather than insert: deliveries now retry with backoff, so the same
   // event can legitimately arrive more than once.
-  const { data: saved, error } = await supabase
-    .from("requests")
-    .upsert([row], { onConflict: "buildos_ref" })
-    .select("id")
-    .single();
+  let { data: saved, error } = await storeRequest(row);
+
+  // A column this deployment has not migrated yet (PGRST204) is permanent: the
+  // same delivery will fail identically forever. Dropping the optional display
+  // columns and retrying keeps the supplier's request visible — without an
+  // amount, rather than not at all — instead of failing the delivery.
+  if (error && isMissingColumnError(error)) {
+    const missing = missingColumnName(error);
+    console.warn(
+      `requests.${missing ?? "(unknown column)"} is missing — storing BuildOS ` +
+        `${event} ${data.id} without amount/currency. Apply supabase/migrations/` +
+        `010_requests_amount_currency.sql to record them.`,
+    );
+    const core = { ...row };
+    delete core.amount;
+    delete core.currency;
+    ({ data: saved, error } = await storeRequest(core));
+  }
 
   if (error) {
-    // A 5xx asks BuildOS to retry. A malformed payload would only fail again,
-    // but that case is already filtered out above.
     console.error(`Failed to store BuildOS ${event} ${data.id}:`, error.message);
-    return res.status(500).json({ error: error.message });
+    // 4xx for anything that cannot succeed on retry. BuildOS counts every
+    // failed delivery toward `maxRetries` and deactivates the endpoint when it
+    // runs out, so returning 5xx for a permanent fault burns the retry budget
+    // and takes the whole integration down — which is how the previous endpoint
+    // died. 5xx stays reserved for genuinely transient faults, where a retry is
+    // the right thing to ask for.
+    return res.status(isPermanentStorageError(error) ? 422 : 500).json({
+      error: error.message,
+    });
   }
 
   res.json({
