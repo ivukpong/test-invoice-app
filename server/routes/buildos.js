@@ -61,19 +61,44 @@ function verifySignature(req) {
  */
 async function resolveProfileId(data) {
   const supplierId = data.supplierId || data.vendorId;
-  if (!supplierId) return null;
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("buildos_supplier_id", supplierId)
-    .maybeSingle();
+  // Primary: match by the stable BuildOS supplier id bridge column.
+  if (supplierId) {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("buildos_supplier_id", supplierId)
+      .maybeSingle();
 
-  if (error) {
-    console.error("Supplier → profile lookup failed:", error.message);
-    return null;
+    if (error) {
+      console.error("Supplier → profile lookup (by id) failed:", error.message);
+    } else if (profile?.id) {
+      return profile.id;
+    }
   }
-  return profile?.id ?? null;
+
+  // Fallback: match by supplier email so requests appear before the profile
+  // has been formally linked via the Profile page.
+  const supplierEmail =
+    data.supplier?.email ||
+    data.supplierEmail ||
+    data.vendorEmail;
+
+  if (supplierEmail) {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", supplierEmail)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Supplier → profile lookup (by email) failed:", error.message);
+    } else if (profile?.id) {
+      return profile.id;
+    }
+  }
+
+  return null;
 }
 
 const HANDLED_EVENTS = new Set(["purchase-request.created", "rfq.sent", "purchase-order.created"]);
