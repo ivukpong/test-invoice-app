@@ -1,6 +1,7 @@
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
 import { supabase } from "../db.js";
+import { notifyProfiles } from "../notify.js";
 
 const router = express.Router();
 
@@ -75,7 +76,7 @@ async function resolveProfileId(data) {
   return profile?.id ?? null;
 }
 
-const HANDLED_EVENTS = new Set(["purchase-request.created", "rfq.sent"]);
+const HANDLED_EVENTS = new Set(["purchase-request.created", "rfq.sent", "purchase-order.created"]);
 
 // POST /api/buildos-webhook — receives events from BuildOS ERP
 router.post("/", async (req, res) => {
@@ -144,6 +145,20 @@ router.post("/", async (req, res) => {
     requestId: saved?.id,
     assigned: Boolean(profileId),
   });
+
+  // Notify the supplier in-app (and by email if SMTP is configured).
+  if (profileId) {
+    const label =
+      event === "rfq.sent" ? "RFQ" :
+      event === "purchase-order.created" ? "Purchase Order" :
+      "Purchase Request";
+    notifyProfiles(
+      [profileId],
+      null,
+      "erp_request",
+      `New ${label} from your buyer — ref: ${data.rfqRef || data.poNumber || data.prRef || data.id}`,
+    ).catch((err) => console.error("Failed to notify supplier:", err.message));
+  }
 });
 
 export default router;

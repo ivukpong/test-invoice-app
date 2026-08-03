@@ -53,7 +53,9 @@ router.patch("/:id/status", async (req, res) => {
     const path =
       data.buildos_event === "rfq.sent"
         ? `/sent-rfqs/${data.buildos_ref}`
-        : `/purchase-requests/${data.buildos_ref}`;
+        : data.buildos_event === "purchase-order.created"
+          ? `/purchase-orders/${data.buildos_ref}`
+          : `/purchase-requests/${data.buildos_ref}`;
     try {
       await buildosFetch(path, { method: "PATCH", body: { status } });
     } catch (buildosErr) {
