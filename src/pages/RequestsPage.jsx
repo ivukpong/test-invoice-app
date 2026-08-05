@@ -63,6 +63,7 @@ export default function RequestsPage({ profile }) {
   const [submitRequest, setSubmitRequest] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
 
   useEffect(() => {
     if (!profile?.id) {
@@ -301,7 +302,7 @@ export default function RequestsPage({ profile }) {
           body.error || `Failed to send to BuildOS (${res.status})`,
         );
       }
-      const data = await res.json().catch(() => ({}));
+      await res.json().catch(() => ({}));
       // Reflect the new status locally so the card leaves the pending state.
       setRequests((prev) =>
         prev.map((r) =>
@@ -309,7 +310,9 @@ export default function RequestsPage({ profile }) {
         ),
       );
       setSubmitRequest(null);
-      navigateToInvoiceBuilder(request, data.buildos?.id);
+      setSubmitSuccess(
+        "Quote sent to BuildOS and added to your Negotiations.",
+      );
     } catch (err) {
       setSubmitError(err.message);
     } finally {
