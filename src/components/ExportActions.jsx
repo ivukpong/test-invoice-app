@@ -25,6 +25,7 @@ export default function ExportActions({
   existingDraftId = null,
   rfqId = null,
   submitAsQuote = false,
+  buildosQuoteId = null,
   onClear,
 }) {
   const [template, setTemplate] = useState("template-1");
@@ -135,6 +136,7 @@ export default function ExportActions({
           : existingDraftId
             ? "draft"
             : "saved",
+        buildosQuoteId: submitAsQuote ? buildosQuoteId : null,
       });
 
       onSaved?.(saved);

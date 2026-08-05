@@ -301,6 +301,7 @@ export default function RequestsPage({ profile }) {
           body.error || `Failed to send to BuildOS (${res.status})`,
         );
       }
+      const data = await res.json().catch(() => ({}));
       // Reflect the new status locally so the card leaves the pending state.
       setRequests((prev) =>
         prev.map((r) =>
@@ -308,7 +309,7 @@ export default function RequestsPage({ profile }) {
         ),
       );
       setSubmitRequest(null);
-      navigateToInvoiceBuilder(request);
+      navigateToInvoiceBuilder(request, data.buildos?.id);
     } catch (err) {
       setSubmitError(err.message);
     } finally {
@@ -316,7 +317,7 @@ export default function RequestsPage({ profile }) {
     }
   }
 
-  function navigateToInvoiceBuilder(request) {
+  function navigateToInvoiceBuilder(request, buildosQuoteId) {
     // Navigate to invoice builder with request data
     const params = new URLSearchParams();
     params.set("request_id", request.id);
@@ -328,6 +329,7 @@ export default function RequestsPage({ profile }) {
     params.set("materials", JSON.stringify(request.materials));
     params.set("pricing", JSON.stringify(request.pricing?.items ?? []));
     params.set("tax_rate", request.pricing?.taxRate || 0);
+    if (buildosQuoteId) params.set("buildos_quote_id", buildosQuoteId);
 
     window.location.href = `/?${params.toString()}`;
   }

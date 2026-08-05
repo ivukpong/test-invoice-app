@@ -4,6 +4,28 @@ import { notifyProfiles } from "../notify.js";
 import { buildosFetch, isBuildosConfigured } from "../buildosClient.js";
 const router = express.Router();
 
+// Reflect a negotiation outcome onto the linked BuildOS Received Quote so the
+// buyer sees the same status/amount in the ERP. Best-effort: a mirror failure
+// must never fail the supplier's action, which has already succeeded locally.
+async function syncQuoteToBuildos(invoiceId, patch) {
+  if (!isBuildosConfigured()) return;
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select("buildos_quote_id")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  const quoteId = invoice?.buildos_quote_id;
+  if (!quoteId) return;
+  try {
+    await buildosFetch(`/received-quotes/${quoteId}`, {
+      method: "PATCH",
+      body: patch,
+    });
+  } catch (err) {
+    console.error("BuildOS quote sync failed:", err.message);
+  }
+}
+
 // Supplier submits a counter-offer
 router.post("/", async (req, res) => {
   const { invoice_id, sender_profile_id, proposed_total, message } = req.body;
@@ -39,6 +61,12 @@ router.post("/", async (req, res) => {
       console.error("notifyProfiles failed:", notifyErr);
     }
   }
+
+  // Mirror the counter-offer amount onto the ERP quote (still under review).
+  await syncQuoteToBuildos(invoice_id, {
+    totalValue: Number(proposed_total) || 0,
+    notes: message || null,
+  });
 
   res.json(data);
 });
@@ -123,6 +151,12 @@ router.patch("/:id/accept", async (req, res) => {
     }
   }
 
+  // Reflect acceptance on the ERP quote: approved at the agreed amount.
+  await syncQuoteToBuildos(neg.invoice_id, {
+    status: "approved",
+    totalValue: Number(neg.proposed_total) || 0,
+  });
+
   res.json(neg);
 });
 
@@ -146,6 +180,7 @@ router.patch("/:id/reject", async (req, res) => {
   } catch (notifyErr) {
     console.error("notifyProfiles failed:", notifyErr);
   }
+  await syncQuoteToBuildos(neg.invoice_id, { status: "rejected" });
   res.json(neg);
 });
 

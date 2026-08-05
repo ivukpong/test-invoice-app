@@ -104,6 +104,7 @@ app.post("/api/invoices", async (req, res) => {
     downloadedAt,
     payload,
     status,
+    buildosQuoteId,
   } = req.body || {};
 
   if (!privacyPolicyAccepted && status !== "draft") {
@@ -133,6 +134,7 @@ app.post("/api/invoices", async (req, res) => {
       payload,
       profileId: profileId || null,
       status: status || "saved",
+      buildosQuoteId: buildosQuoteId || null,
     });
 
     // WhatsApp notification to invoice creator (if phone provided)

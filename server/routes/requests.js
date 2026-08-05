@@ -124,7 +124,7 @@ router.post("/:id/quote", async (req, res) => {
 
     await supabase
       .from("requests")
-      .update({ status: "quoted" })
+      .update({ status: "quoted", buildos_quote_id: buildos?.id || null })
       .eq("id", request.id);
 
     res.json({ ok: true, buildos });

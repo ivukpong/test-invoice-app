@@ -31,6 +31,19 @@ import Homepage from "./pages/Homepage";
 
 import { API_BASE_URL } from "./utils/apiClient";
 
+// Top-level pages that are reflected in the URL as ?view=<page> so a refresh
+// or browser back/forward keeps the user on the same screen.
+const APP_VIEWS = [
+  "main",
+  "invoices",
+  "requests",
+  "negotiations",
+  "negotiation-details",
+  "profile",
+  "settings",
+  "home",
+];
+
 const sanitizeInvoiceData = (data) => {
   if (!data || typeof data !== "object") return data;
   return {
@@ -59,7 +72,11 @@ function App() {
       const savedProfile = JSON.parse(
         localStorage.getItem("profile") || "null",
       );
-      if (savedProfile) return "main";
+      if (savedProfile) {
+        const view = params.get("view");
+        if (view && APP_VIEWS.includes(view)) return view;
+        return "main";
+      }
     } catch {
       // ignore parse errors
     }
@@ -72,6 +89,9 @@ function App() {
   // Set when the builder is opened from a Request, so the saved invoice is
   // recorded as a submitted quote (visible under Negotiations).
   const [fromRequest, setFromRequest] = useState(false);
+  // BuildOS Received Quote id, when the builder is opened from a Request, so
+  // the saved invoice links back to the ERP quote for negotiation sync.
+  const [buildosQuoteId, setBuildosQuoteId] = useState(null);
   const [totalInvoices, setTotalInvoices] = useState(null);
   const [profileStats, setProfileStats] = useState({});
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -147,7 +167,19 @@ function App() {
     const handleUrlChange = () => {
       const params = new URLSearchParams(window.location.search);
       const idParam = params.get("id");
-      if (!idParam) return;
+      const view = params.get("view");
+      if (view && APP_VIEWS.includes(view)) {
+        setPage(view);
+        return;
+      }
+      if (!idParam) {
+        // Back/forward landed on the root URL: show the builder for signed-in
+        // users, otherwise the landing page.
+        setPage(
+          localStorage.getItem("profile") ? "main" : "landing",
+        );
+        return;
+      }
 
       getInvoiceById(idParam)
         .then((row) => {
@@ -229,6 +261,7 @@ function App() {
       });
       setItems(items);
       setFromRequest(true);
+      setBuildosQuoteId(params.get("buildos_quote_id") || null);
       setPage("main");
       return;
     }
@@ -346,6 +379,8 @@ function App() {
     setPage(newPage);
     if (newPage === "main") {
       handleClearForm();
+    } else if (APP_VIEWS.includes(newPage)) {
+      window.history.pushState({}, "", `/?view=${newPage}`);
     }
   }
 
@@ -622,6 +657,7 @@ function App() {
               }
               rfqId={rfqId}
               submitAsQuote={fromRequest}
+              buildosQuoteId={buildosQuoteId}
               onSaved={(saved) => {
                 refreshInvoiceCount();
                 if (saved?.invoice_number) {
