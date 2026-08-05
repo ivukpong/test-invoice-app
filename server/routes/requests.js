@@ -90,7 +90,7 @@ router.post("/:id/quote", async (req, res) => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, buildos_supplier_id")
+    .select("name, email, company, phone, buildos_supplier_id")
     .eq("id", request.profile_id)
     .single();
 
@@ -139,10 +139,12 @@ router.post("/:id/quote", async (req, res) => {
       const currency = request.currency || "NGN";
       const invTotal =
         Number(totalValue) || invItems.reduce((s, i) => s + i.amount, 0);
+      const requester = request.requester || {};
+      const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
       invoice = await saveInvoice({
-        invoiceNumber: `INV-${Date.now().toString(36).toUpperCase()}`,
-        clientEmail: request.title || "Buyer",
-        senderCompanyName: supplierName,
+        invoiceNumber,
+        clientEmail: requester.email || request.title || "Buyer",
+        senderCompanyName: profile?.company || supplierName,
         total: invTotal,
         currency,
         template: "classic",
@@ -151,6 +153,14 @@ router.post("/:id/quote", async (req, res) => {
           items: invItems,
           total: invTotal,
           currency,
+          invoiceNumber,
+          invoiceDate: new Date().toISOString().slice(0, 10),
+          companyName: profile?.company || supplierName,
+          companyEmail: profile?.email || "",
+          companyPhone: profile?.phone || "",
+          clientName: requester.name || request.title || "Buyer",
+          clientCompanyName: requester.company || requester.department || "",
+          clientEmail: requester.email || "",
           notes: `Request: ${ref || request.requestNumber || request.id}`,
         },
         profileId: request.profile_id,

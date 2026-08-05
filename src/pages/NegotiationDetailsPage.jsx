@@ -19,6 +19,19 @@ import styles from "./NegotiationDetailsPage.module.css";
 
 import { API_BASE_URL } from "../utils/apiClient";
 
+function formatMoney(amount, currency = "NGN") {
+  const n = Number(amount) || 0;
+  try {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: currency || "NGN",
+      maximumFractionDigits: 0,
+    }).format(n);
+  } catch {
+    return `${currency || "NGN"} ${n.toLocaleString()}`;
+  }
+}
+
 export default function NegotiationDetailsPage({ profile, onNavigate }) {
   const [negotiationId, setNegotiationId] = useState(null);
   const [negotiation, setNegotiation] = useState(null);
@@ -31,6 +44,8 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
   const [sendingMessage, setSendingMessage] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const money = (n) => formatMoney(n, negotiation?.currency);
+
   useEffect(() => {
     const path = window.location.pathname;
     const match = path.match(/^\/negotiation\/(\d+)$/);
@@ -39,35 +54,102 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
     }
   }, []);
 
-  // Load negotiation data
-  useEffect(() => {
+  // The page is opened with an invoice id (/negotiation/:invoiceId), so the
+  // invoice carries client, sender, items, currency and totals while the
+  // negotiations table holds the counter-offer thread (buyer counters pushed
+  // from BuildOS arrive here with a null sender_profile_id).
+  const loadData = () => {
     if (!negotiationId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API_BASE_URL}/api/negotiate/${negotiationId}`).then((r) =>
+      fetch(`${API_BASE_URL}/api/invoices/${negotiationId}`).then((r) =>
         r.ok ? r.json() : Promise.reject(r.status),
       ),
-      fetch(`${API_BASE_URL}/api/negotiate/${negotiationId}/messages`).then(
-        (r) => (r.ok ? r.json() : Promise.reject(r.status)),
+      fetch(`${API_BASE_URL}/api/negotiate/${negotiationId}`).then((r) =>
+        r.ok ? r.json() : [],
       ),
     ])
-      .then(([neg, msgs]) => {
-        const negData = Array.isArray(neg) ? neg[0] : neg;
-        setNegotiation(negData);
-        if (negData?.items) {
-          setEditableItems(
-            (negData.items || []).map((item) => ({
-              ...item,
-              newUnitPrice: item.unitPrice ?? item.unit_price ?? 0,
-              newTotal:
-                (item.quantity ?? 1) * (item.unitPrice ?? item.unit_price ?? 0),
-            })),
-          );
-        }
-        setMessages(Array.isArray(msgs) ? msgs : (msgs.messages ?? []));
+      .then(([inv, rounds]) => {
+        const roundList = Array.isArray(rounds) ? rounds : [];
+        const payload = inv?.payload || {};
+        const items = (payload.items || []).map((it, idx) => {
+          const quantity = Number(it.quantity ?? it.qty) || 0;
+          const unitPrice =
+            Number(it.unitPrice ?? it.rate ?? it.unit_price) || 0;
+          const amount = Number(it.amount ?? it.total) || quantity * unitPrice;
+          return {
+            id: it.id ?? idx,
+            name: it.description || it.name || it.material || `Item ${idx + 1}`,
+            quantity,
+            unitPrice,
+            originalPrice: amount,
+          };
+        });
+        const lastRound = roundList[roundList.length - 1] || null;
+        const originalAmount =
+          Number(inv?.total) || items.reduce((s, i) => s + i.originalPrice, 0);
+        setNegotiation({
+          invoiceId: inv?.id,
+          invoiceNumber: inv?.invoice_number || `#${negotiationId}`,
+          createdAt: inv?.created_at,
+          currency: inv?.currency || payload.currency || "NGN",
+          status: inv?.status,
+          originalAmount,
+          currentOffer: lastRound
+            ? Number(lastRound.proposed_total) || originalAmount
+            : originalAmount,
+          client: {
+            name: payload.clientName || inv?.client_email || "Buyer",
+            company: payload.clientCompanyName || "",
+            email: payload.clientEmail || inv?.client_email || "",
+          },
+          sender: {
+            name:
+              payload.companyName ||
+              inv?.sender_company_name ||
+              profile?.name ||
+              "",
+            company: payload.companyName || inv?.sender_company_name || "",
+            email: payload.companyEmail || profile?.email || "",
+            phone: payload.companyPhone || "",
+            address: payload.companyAddress || "",
+          },
+          pendingClientOffer:
+            [...roundList]
+              .reverse()
+              .find(
+                (r) =>
+                  !r.sender_profile_id &&
+                  r.status !== "accepted" &&
+                  r.status !== "rejected",
+              ) || null,
+        });
+        setEditableItems(
+          items.map((item) => ({
+            ...item,
+            newUnitPrice: item.unitPrice,
+            newTotal: item.quantity * item.unitPrice,
+          })),
+        );
+        setMessages(
+          roundList.map((r) => ({
+            id: r.id,
+            sender_profile_id: r.sender_profile_id,
+            sender_name:
+              r.profiles?.name || (r.sender_profile_id ? "Supplier" : "Client"),
+            content: r.message,
+            amount: r.proposed_total,
+            created_at: r.created_at,
+          })),
+        );
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [negotiationId]);
 
   // Scroll to bottom when messages update
@@ -79,21 +161,20 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
     if (!newMessage.trim() || !negotiationId) return;
     setSendingMessage(true);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/negotiate/${negotiationId}/messages`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sender_profile_id: profile?.id,
-            content: newMessage.trim(),
-          }),
-        },
-      );
+      const res = await fetch(`${API_BASE_URL}/api/negotiate/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_id: Number(negotiationId),
+          sender_profile_id: profile?.id,
+          proposed_total:
+            negotiation?.currentOffer ?? negotiation?.originalAmount ?? 0,
+          message: newMessage.trim(),
+        }),
+      });
       if (!res.ok) throw new Error("Failed to send message");
-      const saved = await res.json();
-      setMessages((prev) => [...prev, saved]);
       setNewMessage("");
+      loadData();
     } catch {
       // silently ignore send errors
     } finally {
@@ -120,7 +201,7 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
     setItemNotes({ ...itemNotes, [itemId]: note });
   };
 
-  const handleCollectiveCounter = () => {
+  const handleCollectiveCounter = async () => {
     const invalidItem = editableItems.find((i) => i.newUnitPrice <= 0);
     if (invalidItem) {
       alert(`Please enter a valid unit price for "${invalidItem.name}"`);
@@ -128,12 +209,58 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
     }
 
     const totalNew = editableItems.reduce((sum, i) => sum + i.newTotal, 0);
-    const confirmMsg = `Submit collective counter offer?\n\nOriginal: ₦${negotiation.originalAmount.toLocaleString()}\nCurrent Offer: ₦${negotiation.currentOffer.toLocaleString()}\nYour Counter: ₦${totalNew.toLocaleString()}`;
-    if (!confirm(confirmMsg)) return;
+    if (!confirm(`Submit collective counter offer of ${money(totalNew)}?`))
+      return;
 
-    console.log(
-      `Collective counter offer submitted: ₦${totalNew.toLocaleString()}`,
-    );
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/negotiate/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_id: Number(negotiationId),
+          sender_profile_id: profile?.id,
+          proposed_total: totalNew,
+          message: "Collective counter offer",
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to submit counter");
+      loadData();
+    } catch {
+      alert("Could not submit your counter offer. Please try again.");
+    }
+  };
+
+  const handleAcceptOffer = async () => {
+    const offer = negotiation?.pendingClientOffer;
+    if (!offer) return;
+    if (!confirm(`Accept the client offer of ${money(offer.proposed_total)}?`))
+      return;
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/negotiate/${offer.id}/accept`,
+        { method: "PATCH" },
+      );
+      if (!res.ok) throw new Error();
+      loadData();
+    } catch {
+      alert("Could not accept the offer. Please try again.");
+    }
+  };
+
+  const handleRejectOffer = async () => {
+    const offer = negotiation?.pendingClientOffer;
+    if (!offer) return;
+    if (!confirm("Reject this offer?")) return;
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/negotiate/${offer.id}/reject`,
+        { method: "PATCH" },
+      );
+      if (!res.ok) throw new Error();
+      loadData();
+    } catch {
+      alert("Could not reject the offer. Please try again.");
+    }
   };
 
   const calculateTotal = () => {
@@ -160,9 +287,9 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
 
   const handleDownloadPdf = () => {
     const pdfData = {
-      companyName: profile?.name || "",
-      companyAddress: "",
-      companyEmail: profile?.email || "",
+      companyName: negotiation.sender.name || profile?.name || "",
+      companyAddress: negotiation.sender.address || "",
+      companyEmail: negotiation.sender.email || profile?.email || "",
       clientName: negotiation.client.name,
       clientCompanyName: negotiation.client.company,
       invoiceNumber: negotiation.invoiceNumber,
@@ -174,7 +301,7 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
       })),
       subtotal: calculateTotal(),
       total: calculateTotal(),
-      currency: "NGN",
+      currency: negotiation.currency,
       notes: "",
       taxRate: 0,
       tax: 0,
@@ -198,7 +325,10 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
             Negotiation - {negotiation.invoiceNumber}
           </h1>
           <p className={styles.subtitle}>
-            {negotiation.client.name} • {negotiation.client.company}
+            {negotiation.sender.name || "You"} → {negotiation.client.name}
+            {negotiation.client.company
+              ? ` • ${negotiation.client.company}`
+              : ""}
           </p>
         </div>
         <div className={styles.statusBadge}>
@@ -210,6 +340,59 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
       <div className={styles.content}>
         {/* Left Column - Offer Summary + Items + Builder */}
         <div className={styles.leftColumn}>
+          {/* Parties & Invoice details */}
+          <div className={styles.offerSummary}>
+            <h3 className={styles.cardTitle}>
+              <FileText size={20} />
+              Details
+            </h3>
+            <div className={styles.offerRow}>
+              <span className={styles.offerLabel}>From (You):</span>
+              <span className={styles.offerValue}>
+                {negotiation.sender.name || "—"}
+                {negotiation.sender.company &&
+                negotiation.sender.company !== negotiation.sender.name
+                  ? ` • ${negotiation.sender.company}`
+                  : ""}
+              </span>
+            </div>
+            {negotiation.sender.email && (
+              <div className={styles.offerRow}>
+                <span className={styles.offerLabel}>Your Email:</span>
+                <span className={styles.offerValue}>
+                  {negotiation.sender.email}
+                </span>
+              </div>
+            )}
+            <div className={styles.offerRow}>
+              <span className={styles.offerLabel}>Client:</span>
+              <span className={styles.offerValue}>
+                {negotiation.client.name || "—"}
+                {negotiation.client.company
+                  ? ` • ${negotiation.client.company}`
+                  : ""}
+              </span>
+            </div>
+            {negotiation.client.email && (
+              <div className={styles.offerRow}>
+                <span className={styles.offerLabel}>Client Email:</span>
+                <span className={styles.offerValue}>
+                  {negotiation.client.email}
+                </span>
+              </div>
+            )}
+            <div className={styles.offerRow}>
+              <span className={styles.offerLabel}>Invoice #:</span>
+              <span className={styles.offerValue}>
+                {negotiation.invoiceNumber}
+              </span>
+            </div>
+            <div className={styles.offerRow}>
+              <span className={styles.offerLabel}>Currency:</span>
+              <span className={styles.offerValue}>{negotiation.currency}</span>
+            </div>
+          </div>
+
           {/* Offer Summary */}
           <div className={styles.offerSummary}>
             <h3 className={styles.cardTitle}>
@@ -219,19 +402,19 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
             <div className={styles.offerRow}>
               <span className={styles.offerLabel}>Original Amount:</span>
               <span className={styles.offerValue}>
-                ₦{negotiation.originalAmount.toLocaleString()}
+                {money(negotiation.originalAmount)}
               </span>
             </div>
             <div className={styles.offerRow}>
               <span className={styles.offerLabel}>Client Offer:</span>
               <span className={styles.offerValueHighlight}>
-                ₦{negotiation.currentOffer.toLocaleString()}
+                {money(negotiation.currentOffer)}
               </span>
             </div>
             <div className={styles.offerRow}>
               <span className={styles.offerLabel}>Your Counter:</span>
               <span className={styles.offerValueHighlight}>
-                ₦{calculateTotal().toLocaleString()}
+                {money(calculateTotal())}
               </span>
             </div>
             <div className={styles.offerRow}>
@@ -239,29 +422,27 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
                 Difference from Original:
               </span>
               <span className={styles.offerValueNegative}>
-                -₦
-                {(
+                -
+                {money(
                   negotiation.originalAmount -
-                  Math.min(negotiation.currentOffer, calculateTotal())
-                ).toLocaleString()}
+                    Math.min(negotiation.currentOffer, calculateTotal()),
+                )}
               </span>
             </div>
 
             <div className={styles.actionButtons}>
               <button
                 className={styles.acceptButton}
-                onClick={() =>
-                  confirm("Accept offer?") && console.log("Accepted")
-                }
+                onClick={handleAcceptOffer}
+                disabled={!negotiation.pendingClientOffer}
               >
                 <CheckCircle2 size={18} />
                 Accept Offer
               </button>
               <button
                 className={styles.rejectButton}
-                onClick={() =>
-                  confirm("Reject offer?") && console.log("Rejected")
-                }
+                onClick={handleRejectOffer}
+                disabled={!negotiation.pendingClientOffer}
               >
                 <XCircle size={18} />
                 Reject
@@ -288,7 +469,7 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
                 <div className={styles.previousAmountRow}>
                   <span className={styles.previousAmountLabel}>Original:</span>
                   <span className={styles.previousAmountValue}>
-                    ₦{item.originalPrice.toLocaleString()}
+                    {money(item.originalPrice)}
                   </span>
                 </div>
 
@@ -333,7 +514,7 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
                 <div className={styles.newTotalRow}>
                   <span className={styles.newTotalLabel}>Your New Total:</span>
                   <span className={styles.newTotalValue}>
-                    ₦{item.newTotal.toLocaleString()}
+                    {money(item.newTotal)}
                   </span>
                 </div>
 
@@ -359,7 +540,7 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
             <div className={styles.collectiveSubmit}>
               <div className={styles.collectiveTotal}>
                 <span>Collective Counter Total:</span>
-                <strong>₦{calculateTotal().toLocaleString()}</strong>
+                <strong>{money(calculateTotal())}</strong>
               </div>
               <button
                 className={styles.counterButton}
@@ -403,12 +584,16 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
                 <div className={styles.builderPreview}>
                   <div className={styles.builderRow}>
                     <div className={styles.builderField}>
+                      <label>From</label>
+                      <span>{negotiation.sender.name || "—"}</span>
+                    </div>
+                    <div className={styles.builderField}>
                       <label>Client</label>
-                      <span>{negotiation.client.name}</span>
+                      <span>{negotiation.client.name || "—"}</span>
                     </div>
                     <div className={styles.builderField}>
                       <label>Company</label>
-                      <span>{negotiation.client.company}</span>
+                      <span>{negotiation.client.company || "—"}</span>
                     </div>
                     <div className={styles.builderField}>
                       <label>Invoice #</label>
@@ -430,8 +615,8 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
                         <tr key={item.id}>
                           <td>{item.name}</td>
                           <td>{item.quantity}</td>
-                          <td>₦{item.newUnitPrice.toLocaleString()}</td>
-                          <td>₦{item.newTotal.toLocaleString()}</td>
+                          <td>{money(item.newUnitPrice)}</td>
+                          <td>{money(item.newTotal)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -441,7 +626,7 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
                           <strong>Total</strong>
                         </td>
                         <td>
-                          <strong>₦{calculateTotal().toLocaleString()}</strong>
+                          <strong>{money(calculateTotal())}</strong>
                         </td>
                       </tr>
                     </tfoot>
@@ -462,31 +647,31 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
             </h3>
 
             <div className={styles.messages}>
+              {messages.length === 0 && (
+                <p className={styles.messageText}>No messages yet.</p>
+              )}
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`${styles.message} ${msg.from === "owner" || msg.sender_profile_id === profile?.id ? styles.messageOwner : styles.messageClient}`}
+                  className={`${styles.message} ${msg.sender_profile_id === profile?.id ? styles.messageOwner : styles.messageClient}`}
                 >
                   <div className={styles.messageHeader}>
                     <span className={styles.messageFrom}>
-                      {msg.fromName ??
-                        msg.sender_name ??
-                        (msg.sender_profile_id === profile?.id
-                          ? "You"
-                          : "Client")}
+                      {msg.sender_profile_id === profile?.id
+                        ? "You"
+                        : msg.sender_name || "Client"}
                     </span>
                     <span className={styles.messageTime}>
-                      {formatTime(msg.timestamp ?? msg.created_at)}
+                      {formatTime(msg.created_at)}
                     </span>
                   </div>
-                  {msg.type === "offer" ? (
+                  {msg.amount != null && (
                     <div className={styles.offerMessage}>
-                      💰 Offer: ₦{msg.amount?.toLocaleString()}
+                      💰 {money(msg.amount)}
                     </div>
-                  ) : (
-                    <p className={styles.messageText}>
-                      {msg.message ?? msg.content}
-                    </p>
+                  )}
+                  {msg.content && (
+                    <p className={styles.messageText}>{msg.content}</p>
                   )}
                 </div>
               ))}
@@ -531,15 +716,17 @@ export default function NegotiationDetailsPage({ profile, onNavigate }) {
               {messages.map((msg) => (
                 <div key={msg.id} className={styles.timelineItem}>
                   <div
-                    className={`${styles.timelineDot} ${msg.from === "owner" ? styles.timelineDotOwner : ""}`}
+                    className={`${styles.timelineDot} ${msg.sender_profile_id === profile?.id ? styles.timelineDotOwner : ""}`}
                   ></div>
                   <div className={styles.timelineContent}>
                     <p className={styles.timelineTitle}>
-                      {msg.type === "offer" ? "Offer Made" : "Message"} -{" "}
-                      {msg.fromName}
+                      {msg.amount != null ? "Offer" : "Message"} -{" "}
+                      {msg.sender_profile_id === profile?.id
+                        ? "You"
+                        : msg.sender_name || "Client"}
                     </p>
                     <p className={styles.timelineTime}>
-                      {formatTime(msg.timestamp)}
+                      {formatTime(msg.created_at)}
                     </p>
                   </div>
                 </div>
