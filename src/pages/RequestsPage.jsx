@@ -15,6 +15,43 @@ import styles from "./RequestsPage.module.css";
 
 import { API_BASE_URL } from "../utils/apiClient";
 
+/**
+ * ERP-sourced requests arrive via the BuildOS webhook with a minimal shape
+ * (title, amount, a flat `materials` array of line items) and no `pricing`.
+ * The card's expanded view assumes the richer portal shape — `material.id`,
+ * `pricing.items`, `pricing.taxRate` — so expanding a webhook request read
+ * `pricing.items` off undefined and blanked the page. Normalising on load
+ * gives every request that shape, and seeds one pricing row per material so the
+ * supplier can type a unit price (handlePriceChange matches on `materialId`).
+ */
+function normalizeMaterial(m, idx) {
+  return {
+    id: m?.id ?? m?.materialId ?? String(idx),
+    name: m?.name ?? m?.material ?? m?.materialName ?? "Item",
+    description: m?.description ?? "",
+    quantity: Number(m?.quantity ?? m?.qty ?? 0),
+    unit: m?.unit ?? "",
+  };
+}
+
+function normalizeRequest(r) {
+  const materials = Array.isArray(r?.materials)
+    ? r.materials.map(normalizeMaterial)
+    : [];
+  return {
+    ...r,
+    requestNumber: r?.requestNumber ?? r?.buildos_ref ?? r?.id,
+    title: r?.title ?? "ERP Request",
+    requester: r?.requester ?? {},
+    erpData: r?.erpData ?? {},
+    materials,
+    pricing: r?.pricing ?? {
+      items: materials.map((m) => ({ materialId: m.id, unitPrice: 0 })),
+      taxRate: 7.5,
+    },
+  };
+}
+
 export default function RequestsPage({ profile }) {
   const [requests, setRequests] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -37,7 +74,8 @@ export default function RequestsPage({ profile }) {
         return res.json();
       })
       .then((data) => {
-        setRequests(Array.isArray(data) ? data : (data.requests ?? []));
+        const rows = Array.isArray(data) ? data : (data.requests ?? []);
+        setRequests(rows.map(normalizeRequest));
         setLoading(false);
       })
       .catch((err) => {
