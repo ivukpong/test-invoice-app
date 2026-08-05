@@ -130,7 +130,54 @@ async function resolveProfileId(data) {
   return null;
 }
 
-const HANDLED_EVENTS = new Set(["purchase-request.created", "rfq.sent", "purchase-order.created"]);
+const HANDLED_EVENTS = new Set(["purchase-request.created", "rfq.sent", "purchase-order.created", "quote.negotiated"]);
+
+/**
+ * Surface a buyer counter-offer (raised in BuildOS) on the supplier's portal.
+ *
+ * The invoice is found through invoices.buildos_quote_id — the link written
+ * when the supplier submitted the quote from a request. Setting the invoice to
+ * "negotiating" is what makes it appear on the Negotiations page; the
+ * negotiation row (sender_profile_id null = "from the buyer") gives the thread
+ * its opening counter. Both are best-effort: a missing link is acknowledged so
+ * BuildOS does not retry to exhaustion.
+ */
+async function handleQuoteNegotiated(data, res) {
+  const { data: invoice, error } = await supabase
+    .from("invoices")
+    .select("id, profile_id, invoice_number")
+    .eq("buildos_quote_id", String(data.id))
+    .maybeSingle();
+
+  if (error) {
+    console.error(`quote.negotiated ${data.id} lookup failed:`, error.message);
+    return res.status(500).json({ error: error.message });
+  }
+  if (!invoice) {
+    return res.json({ received: true, event: "quote.negotiated", ignored: true, reason: "no linked invoice" });
+  }
+
+  await supabase.from("invoices").update({ status: "negotiating" }).eq("id", invoice.id);
+  await supabase.from("negotiations").insert([
+    {
+      invoice_id: invoice.id,
+      sender_profile_id: null,
+      proposed_total: Number(data.proposedAmount) || 0,
+      message: data.comment || `Buyer counter-offer (round ${data.round ?? 1})`,
+    },
+  ]);
+
+  res.json({ received: true, event: "quote.negotiated", invoiceId: invoice.id });
+
+  if (invoice.profile_id) {
+    notifyProfiles(
+      [invoice.profile_id],
+      invoice.id,
+      "counter_offer",
+      `Buyer countered your quote on invoice ${invoice.invoice_number}`,
+    ).catch((err) => console.error("Failed to notify supplier:", err.message));
+  }
+}
 
 /** PostgREST codes that will never succeed on retry, however many times BuildOS resends. */
 const PERMANENT_STORAGE_CODES = new Set([
@@ -190,6 +237,12 @@ router.post("/", async (req, res) => {
     return res
       .status(400)
       .json({ error: "data.id is required as the idempotency key" });
+  }
+
+  // A buyer counter-offer raised in the ERP. data.id is the BuildOS quote id,
+  // which links to the portal invoice through invoices.buildos_quote_id.
+  if (event === "quote.negotiated") {
+    return handleQuoteNegotiated(data, res);
   }
 
   const profileId = await resolveProfileId(data);
