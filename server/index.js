@@ -220,46 +220,53 @@ app.post("/api/invoices/:id/email-pdf", async (req, res) => {
       .status(400)
       .json({ error: "pdfBase64 and profileId are required" });
   }
-  // Fetch profile email
-  const { data: profile, error: pErr } = await supabase
-    .from("profiles")
-    .select("email, name")
-    .eq("id", profileId)
-    .maybeSingle();
-  if (pErr || !profile)
-    return res.status(404).json({ error: "Profile not found" });
 
-  if (!process.env.RESEND_API_KEY) {
-    return res.status(503).json({ error: "Email service not configured" });
+  try {
+    // Fetch profile email
+    const { data: profile, error: pErr } = await supabase
+      .from("profiles")
+      .select("email, name")
+      .eq("id", profileId)
+      .maybeSingle();
+    if (pErr || !profile)
+      return res.status(404).json({ error: "Profile not found" });
+
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(503).json({ error: "Email service not configured" });
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const from =
+      process.env.EMAIL_FROM || "Free Invoice <onboarding@resend.dev>";
+
+    const pdfBuffer = Buffer.from(
+      pdfBase64.replace(/^data:application\/pdf;base64,/, ""),
+      "base64",
+    );
+
+    const { error: sendError } = await resend.emails.send({
+      from,
+      to: profile.email,
+      subject: `Your Invoice — Free Invoice`,
+      html: `<p>Hi ${profile.name || "there"},</p><p>Please find your invoice attached.</p><p>Thank you for using Free Invoice!</p>`,
+      attachments: [
+        {
+          filename: `invoice-${id}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
+    });
+
+    if (sendError) {
+      console.error("Resend error:", sendError);
+      return res.status(502).json({ error: sendError.message });
+    }
+
+    return res.json({ message: "Invoice emailed successfully" });
+  } catch (err) {
+    console.error("email-pdf failed:", err);
+    return res.status(500).json({ error: "Failed to email invoice PDF." });
   }
-
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.EMAIL_FROM || "Free Invoice <onboarding@resend.dev>";
-
-  const pdfBuffer = Buffer.from(
-    pdfBase64.replace(/^data:application\/pdf;base64,/, ""),
-    "base64",
-  );
-
-  const { error: sendError } = await resend.emails.send({
-    from,
-    to: profile.email,
-    subject: `Your Invoice — Free Invoice`,
-    html: `<p>Hi ${profile.name || "there"},</p><p>Please find your invoice attached.</p><p>Thank you for using Free Invoice!</p>`,
-    attachments: [
-      {
-        filename: `invoice-${id}.pdf`,
-        content: pdfBuffer,
-      },
-    ],
-  });
-
-  if (sendError) {
-    console.error("Resend error:", sendError);
-    return res.status(500).json({ error: sendError.message });
-  }
-
-  return res.json({ message: "Invoice emailed successfully" });
 });
 
 // ── PATCH /api/invoices/:id — update an existing invoice (e.g., resave draft) ─
@@ -332,6 +339,11 @@ app.use("/api", (_req, res) => {
 app.use((error, _req, res, _next) => {
   console.error("Unhandled API error", error);
   if (res.headersSent) return;
+  if (error?.type === "entity.too.large" || error?.status === 413) {
+    return res
+      .status(413)
+      .json({ error: "File is too large. Please reduce the invoice size." });
+  }
   res.status(500).json({ error: "Unexpected server error." });
 });
 
