@@ -147,6 +147,8 @@ async function handleQuoteNegotiated(data, res) {
     .from("invoices")
     .select("id, profile_id, invoice_number")
     .eq("buildos_quote_id", String(data.id))
+    .order("id", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) {

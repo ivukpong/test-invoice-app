@@ -1,5 +1,5 @@
 import express from "express";
-import { supabase } from "../db.js";
+import { supabase, saveInvoice } from "../db.js";
 import { buildosFetch, isBuildosConfigured } from "../buildosClient.js";
 
 const router = express.Router();
@@ -122,12 +122,50 @@ router.post("/:id/quote", async (req, res) => {
       },
     });
 
+    // Create the matching portal invoice so the submission is visible on the
+    // Negotiations page immediately and a buyer counter (quote.negotiated) can
+    // resolve it back through buildos_quote_id. Best-effort: the BuildOS quote
+    // already succeeded, so a portal-side failure must not fail the request.
+    let invoice = null;
+    try {
+      const invItems = lines.map((l) => ({
+        description: l.material,
+        quantity: Number(l.qty) || 0,
+        rate: Number(l.unitPrice) || 0,
+        amount:
+          Number(l.total) || (Number(l.qty) || 0) * (Number(l.unitPrice) || 0),
+      }));
+      const currency = request.currency || "NGN";
+      const invTotal =
+        Number(totalValue) || invItems.reduce((s, i) => s + i.amount, 0);
+      invoice = await saveInvoice({
+        invoiceNumber: `INV-${Date.now().toString(36).toUpperCase()}`,
+        clientEmail: request.title || "Buyer",
+        senderCompanyName: supplierName,
+        total: invTotal,
+        currency,
+        template: "classic",
+        privacyPolicyAccepted: false,
+        payload: {
+          items: invItems,
+          total: invTotal,
+          currency,
+          notes: `Request: ${ref || request.requestNumber || request.id}`,
+        },
+        profileId: request.profile_id,
+        status: "quote_submitted",
+        buildosQuoteId: buildos?.id || null,
+      });
+    } catch (invErr) {
+      console.error("Failed to create portal invoice for quote:", invErr.message);
+    }
+
     await supabase
       .from("requests")
       .update({ status: "quoted", buildos_quote_id: buildos?.id || null })
       .eq("id", request.id);
 
-    res.json({ ok: true, buildos });
+    res.json({ ok: true, buildos, invoice });
   } catch (err) {
     console.error("BuildOS quote submit failed:", err.message);
     res.status(502).json({ error: `Could not send to BuildOS: ${err.message}` });

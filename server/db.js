@@ -75,22 +75,47 @@ export async function initDb() {
 
 export async function saveInvoice(invoiceRecord) {
   if (useSupabaseApi) {
+    const row = {
+      invoice_number: invoiceRecord.invoiceNumber,
+      client_email: invoiceRecord.clientEmail,
+      sender_company_name: invoiceRecord.senderCompanyName,
+      total: invoiceRecord.total || 0,
+      currency: invoiceRecord.currency,
+      template: invoiceRecord.template,
+      privacy_policy_accepted: invoiceRecord.privacyPolicyAccepted,
+      downloaded_at: invoiceRecord.downloadedAt,
+      payload: invoiceRecord.payload,
+      profile_id: invoiceRecord.profileId || null,
+      status: invoiceRecord.status || "saved",
+      buildos_quote_id: invoiceRecord.buildosQuoteId || null,
+    };
+
+    // One BuildOS quote maps to one invoice: submitting directly and then
+    // refining in the builder must update the same row, not create a duplicate
+    // (duplicates would also break the counter lookup keyed on buildos_quote_id).
+    if (row.buildos_quote_id) {
+      const { data: existing } = await supabase
+        .from("invoices")
+        .select("id")
+        .eq("buildos_quote_id", row.buildos_quote_id)
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing?.id) {
+        const { data, error } = await supabase
+          .from("invoices")
+          .update(row)
+          .eq("id", existing.id)
+          .select("id, created_at")
+          .single();
+        if (error) throw new Error(error.message || "Supabase update failed.");
+        return data;
+      }
+    }
+
     const { data, error } = await supabase
       .from("invoices")
-      .insert({
-        invoice_number: invoiceRecord.invoiceNumber,
-        client_email: invoiceRecord.clientEmail,
-        sender_company_name: invoiceRecord.senderCompanyName,
-        total: invoiceRecord.total || 0,
-        currency: invoiceRecord.currency,
-        template: invoiceRecord.template,
-        privacy_policy_accepted: invoiceRecord.privacyPolicyAccepted,
-        downloaded_at: invoiceRecord.downloadedAt,
-        payload: invoiceRecord.payload,
-        profile_id: invoiceRecord.profileId || null,
-        status: invoiceRecord.status || "saved",
-        buildos_quote_id: invoiceRecord.buildosQuoteId || null,
-      })
+      .insert(row)
       .select("id, created_at")
       .single();
 
