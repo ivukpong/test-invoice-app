@@ -69,6 +69,9 @@ function App() {
   const [receivedInvoiceId, setReceivedInvoiceId] = useState(null);
   const [loadedInvoiceStatus, setLoadedInvoiceStatus] = useState(null);
   const [rfqId, setRfqId] = useState(null);
+  // Set when the builder is opened from a Request, so the saved invoice is
+  // recorded as a submitted quote (visible under Negotiations).
+  const [fromRequest, setFromRequest] = useState(false);
   const [totalInvoices, setTotalInvoices] = useState(null);
   const [profileStats, setProfileStats] = useState({});
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -225,6 +228,7 @@ function App() {
         };
       });
       setItems(items);
+      setFromRequest(true);
       setPage("main");
       return;
     }
@@ -617,6 +621,7 @@ function App() {
                 loadedInvoiceStatus === "draft" ? receivedInvoiceId : null
               }
               rfqId={rfqId}
+              submitAsQuote={fromRequest}
               onSaved={(saved) => {
                 refreshInvoiceCount();
                 if (saved?.invoice_number) {

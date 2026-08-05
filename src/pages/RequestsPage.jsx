@@ -138,6 +138,12 @@ export default function RequestsPage({ profile }) {
       textColor: "#065f46",
       icon: CheckCircle2,
     },
+    quoted: {
+      label: "Quote Sent",
+      color: "#dcfce7",
+      textColor: "#166534",
+      icon: CheckCircle2,
+    },
     rejected: {
       label: "Rejected",
       color: "#fee2e2",
@@ -151,7 +157,9 @@ export default function RequestsPage({ profile }) {
       selectedCategory === "all"
         ? true
         : selectedCategory === "sent"
-          ? req.status === "approved" || req.status === "processed"
+          ? req.status === "approved" ||
+            req.status === "processed" ||
+            req.status === "quoted"
           : req.status === selectedCategory;
 
     const matchesSearch = searchQuery

@@ -24,6 +24,7 @@ export default function ExportActions({
   receivedInvoiceId = null,
   existingDraftId = null,
   rfqId = null,
+  submitAsQuote = false,
   onClear,
 }) {
   const [template, setTemplate] = useState("template-1");
@@ -129,7 +130,11 @@ export default function ExportActions({
         payload: pdfData,
         profileId: profile?.id || null,
         senderPhone: profile?.phone || invoice.senderPhone || null,
-        status: existingDraftId ? "draft" : "saved",
+        status: submitAsQuote
+          ? "quote_submitted"
+          : existingDraftId
+            ? "draft"
+            : "saved",
       });
 
       onSaved?.(saved);
