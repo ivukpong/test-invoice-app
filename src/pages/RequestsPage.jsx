@@ -60,6 +60,9 @@ export default function RequestsPage({ profile }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
+  const [submitRequest, setSubmitRequest] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
     if (!profile?.id) {
@@ -187,7 +190,7 @@ export default function RequestsPage({ profile }) {
 
   function calculateTax(request) {
     const subtotal = calculateSubtotal(request);
-    const taxRate = request.pricing.taxRate || 0;
+    const taxRate = request.pricing?.taxRate || 0;
     return subtotal * (taxRate / 100);
   }
 
@@ -201,7 +204,7 @@ export default function RequestsPage({ profile }) {
             pricing: { ...req.pricing, taxRate: parseFloat(value) || 0 },
           };
         }
-        const pricingItem = req.pricing.items.find(
+        const pricingItem = req.pricing?.items?.find(
           (p) => p.materialId === materialId,
         );
         if (!pricingItem) return req;
@@ -239,19 +242,70 @@ export default function RequestsPage({ profile }) {
   }
 
   function handleSubmit(request) {
-    const hasAllPrices = request.pricing.items.every(
+    const hasAllPrices = (request.pricing?.items ?? []).every(
       (item) => item.unitPrice > 0,
     );
     if (!hasAllPrices) {
       alert("Please enter prices for all items before submitting");
       return;
     }
+    setSubmitError(null);
+    setSubmitRequest(request);
+  }
 
-    const total = calculateTotal(request);
-    const confirmMsg = `Submit invoice for ${request.requestNumber}?\n\nTotal: ${formatAmount(total)}\n\nThis will create an invoice with the pre-filled information.`;
-    if (!confirm(confirmMsg)) return;
+  // The priced line items in the shape BuildOS records on a received quote.
+  function buildQuoteItems(request) {
+    return (request.materials ?? []).map((m) => {
+      const priced = request.pricing?.items?.find(
+        (p) => p.materialId === m.id,
+      );
+      const unitPrice = priced?.unitPrice || 0;
+      return {
+        material: m.name,
+        qty: m.quantity,
+        unit: m.unit,
+        unitPrice,
+        total: m.quantity * unitPrice,
+      };
+    });
+  }
 
-    navigateToInvoiceBuilder(request);
+  async function confirmSubmit() {
+    const request = submitRequest;
+    if (!request) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/requests/${request.id}/quote`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: buildQuoteItems(request),
+            totalValue: calculateTotal(request),
+          }),
+        },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          body.error || `Failed to send to BuildOS (${res.status})`,
+        );
+      }
+      // Reflect the new status locally so the card leaves the pending state.
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === request.id ? { ...r, status: "quoted" } : r,
+        ),
+      );
+      setSubmitRequest(null);
+      navigateToInvoiceBuilder(request);
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function navigateToInvoiceBuilder(request) {
@@ -264,8 +318,8 @@ export default function RequestsPage({ profile }) {
     params.set("requester_email", request.requester?.email || "");
     params.set("po_number", request.erpData?.poNumber || "");
     params.set("materials", JSON.stringify(request.materials));
-    params.set("pricing", JSON.stringify(request.pricing.items));
-    params.set("tax_rate", request.pricing.taxRate || 0);
+    params.set("pricing", JSON.stringify(request.pricing?.items ?? []));
+    params.set("tax_rate", request.pricing?.taxRate || 0);
 
     window.location.href = `/?${params.toString()}`;
   }
@@ -515,7 +569,7 @@ export default function RequestsPage({ profile }) {
                             </thead>
                             <tbody>
                               {request.materials.map((material) => {
-                                const pricingItem = request.pricing.items.find(
+                                const pricingItem = request.pricing?.items?.find(
                                   (p) => p.materialId === material.id,
                                 );
                                 const unitPrice = pricingItem?.unitPrice || 0;
@@ -564,7 +618,7 @@ export default function RequestsPage({ profile }) {
                             <input
                               type="number"
                               className={styles.taxRateInput}
-                              value={request.pricing.taxRate ?? 7.5}
+                              value={request.pricing?.taxRate ?? 7.5}
                               onChange={(e) =>
                                 handlePriceChange(
                                   request.id,
@@ -591,7 +645,7 @@ export default function RequestsPage({ profile }) {
                         </div>
                         <div className={styles.totalRow}>
                           <span className={styles.totalLabel}>
-                            Tax ({request.pricing.taxRate || 0}%):
+                            Tax ({request.pricing?.taxRate || 0}%):
                           </span>
                           <span className={styles.totalValue}>
                             {formatAmount(calculateTax(request))}
@@ -641,6 +695,137 @@ export default function RequestsPage({ profile }) {
           </div>
         )}
       </main>
+
+      {submitRequest && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !submitting && setSubmitRequest(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              width: "100%",
+              maxWidth: 460,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #eef0f3" }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>
+                Send quote to BuildOS
+              </h3>
+              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#64748b" }}>
+                {submitRequest.requestNumber} · {submitRequest.title}
+              </p>
+            </div>
+
+            <div style={{ padding: "18px 24px" }}>
+              <p style={{ margin: "0 0 14px", fontSize: 14, color: "#334155" }}>
+                Your priced response will be sent back to BuildOS
+                {submitRequest.buildos_event === "purchase-order.created"
+                  ? " as a purchase invoice"
+                  : " as a received quote"}
+                , and the invoice builder will open pre-filled.
+              </p>
+
+              <div style={{ fontSize: 14, color: "#334155" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                  <span>Subtotal</span>
+                  <span>{formatAmount(calculateSubtotal(submitRequest))}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                  <span>Tax ({submitRequest.pricing?.taxRate || 0}%)</span>
+                  <span>{formatAmount(calculateTax(submitRequest))}</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "10px 0 0",
+                    marginTop: 6,
+                    borderTop: "1px solid #eef0f3",
+                    fontWeight: 700,
+                    color: "#0f172a",
+                  }}
+                >
+                  <span>Total</span>
+                  <span>{formatAmount(calculateTotal(submitRequest))}</span>
+                </div>
+              </div>
+
+              {submitError && (
+                <p
+                  style={{
+                    margin: "14px 0 0",
+                    fontSize: 13,
+                    color: "#b91c1c",
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                  }}
+                >
+                  {submitError}
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                padding: "16px 24px",
+                borderTop: "1px solid #eef0f3",
+              }}
+            >
+              <button
+                onClick={() => setSubmitRequest(null)}
+                disabled={submitting}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  border: "1px solid #d1d5db",
+                  background: "#fff",
+                  color: "#374151",
+                  fontWeight: 600,
+                  cursor: submitting ? "not-allowed" : "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSubmit}
+                disabled={submitting}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: submitting ? "#6ee7b7" : "#10b981",
+                  color: "#fff",
+                  fontWeight: 700,
+                  cursor: submitting ? "not-allowed" : "pointer",
+                }}
+              >
+                {submitting ? "Sending…" : "Send to BuildOS & Build Invoice"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
