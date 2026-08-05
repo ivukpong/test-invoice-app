@@ -127,6 +127,7 @@ router.post("/:id/quote", async (req, res) => {
     // resolve it back through buildos_quote_id. Best-effort: the BuildOS quote
     // already succeeded, so a portal-side failure must not fail the request.
     let invoice = null;
+    let invoiceError = null;
     try {
       const invItems = lines.map((l) => ({
         description: l.material,
@@ -157,6 +158,7 @@ router.post("/:id/quote", async (req, res) => {
         buildosQuoteId: buildos?.id || null,
       });
     } catch (invErr) {
+      invoiceError = invErr.message;
       console.error("Failed to create portal invoice for quote:", invErr.message);
     }
 
@@ -165,7 +167,7 @@ router.post("/:id/quote", async (req, res) => {
       .update({ status: "quoted", buildos_quote_id: buildos?.id || null })
       .eq("id", request.id);
 
-    res.json({ ok: true, buildos, invoice });
+    res.json({ ok: true, buildos, invoice, invoiceError });
   } catch (err) {
     console.error("BuildOS quote submit failed:", err.message);
     res.status(502).json({ error: `Could not send to BuildOS: ${err.message}` });
