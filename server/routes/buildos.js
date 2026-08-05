@@ -50,20 +50,54 @@ function verifySignature(req) {
 }
 
 /**
+ * Gather every supplier id and email a BuildOS payload can carry.
+ *
+ * The three event shapes address a supplier differently, and reading only the
+ * top level missed two of them — which is why purchase requests always stored
+ * unassigned and never reached the supplier they were raised for:
+ *  - purchase-order.created carries a top-level `supplierId` and an included
+ *    `supplier` object.
+ *  - rfq.sent carries `supplierId` and the raiser-entered `contactEmail`.
+ *  - purchase-request.created carries neither at the top level; the supplier(s)
+ *    live in a `suppliers[]` array of `{ supplier, supplierId }`.
+ */
+function collectSupplierRefs(data) {
+  const ids = new Set();
+  const emails = new Set();
+  const addId = (v) => v && ids.add(String(v));
+  const addEmail = (v) => v && emails.add(String(v).trim());
+
+  addId(data.supplierId);
+  addId(data.vendorId);
+  addEmail(data.supplier?.email);
+  addEmail(data.supplierEmail);
+  addEmail(data.vendorEmail);
+  addEmail(data.contactEmail);
+
+  if (Array.isArray(data.suppliers)) {
+    for (const s of data.suppliers) {
+      addId(s?.supplierId || s?.id);
+      addEmail(s?.email);
+    }
+  }
+
+  return { ids: [...ids], emails: [...emails] };
+}
+
+/**
  * Resolve the BuildOS supplier on the payload to a SabiQuot profile.
  *
  * BuildOS supplier ids are cuids while profiles.id is a uuid, so the two can
- * only be matched through the buildos_supplier_id bridge column — the old code
- * assigned `data.supplierId` straight to `profile_id`, which could never match
- * and violated the column's uuid type. A request that cannot be matched is
- * still stored, with a null profile_id, so it surfaces for reconciliation
- * rather than being dropped.
+ * only be matched through the buildos_supplier_id bridge column. Email is a
+ * fallback so requests appear before the profile has been formally linked via
+ * the Profile page. A request that cannot be matched is still stored, with a
+ * null profile_id, so it surfaces for reconciliation rather than being dropped.
  */
 async function resolveProfileId(data) {
-  const supplierId = data.supplierId || data.vendorId;
+  const { ids, emails } = collectSupplierRefs(data);
 
   // Primary: match by the stable BuildOS supplier id bridge column.
-  if (supplierId) {
+  for (const supplierId of ids) {
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("id")
@@ -77,18 +111,13 @@ async function resolveProfileId(data) {
     }
   }
 
-  // Fallback: match by supplier email so requests appear before the profile
-  // has been formally linked via the Profile page.
-  const supplierEmail =
-    data.supplier?.email ||
-    data.supplierEmail ||
-    data.vendorEmail;
-
-  if (supplierEmail) {
+  // Fallback: match by supplier email, case-insensitively so a difference in
+  // casing between the ERP record and the portal profile does not orphan it.
+  for (const email of emails) {
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("id")
-      .eq("email", supplierEmail)
+      .ilike("email", email)
       .maybeSingle();
 
     if (error) {
