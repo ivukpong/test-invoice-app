@@ -47,7 +47,10 @@ app.use((_req, res, next) => {
 // cannot be trusted.
 app.use(
   express.json({
-    limit: "2mb",
+    // Base64-encoded invoice PDFs (POSTed to /email-pdf) routinely exceed a
+    // couple MB once a logo or signature image is embedded; 2mb rejected them
+    // with an opaque 500 from the global error handler.
+    limit: "20mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },
