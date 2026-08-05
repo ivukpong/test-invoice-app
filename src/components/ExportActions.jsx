@@ -215,7 +215,10 @@ export default function ExportActions({
         privacyPolicyAccepted: false,
         payload: pdfData,
         profileId: profile.id,
-        status: "draft",
+        // Responding to a buyer request is a quote submission, not a private
+        // draft — keep the BuildOS link so a buyer counter can find it back.
+        status: submitAsQuote ? "quote_submitted" : "draft",
+        buildosQuoteId: submitAsQuote ? buildosQuoteId : null,
       });
 
       onSaved?.(saved);
