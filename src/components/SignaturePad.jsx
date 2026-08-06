@@ -94,7 +94,7 @@ const SignaturePad = forwardRef(
     };
 
     return (
-      <div className={styles.wrapper}>
+      <div className={`${styles.wrapper} signature-pad`}>
         <div className={styles.header}>
           <div>
             <p className={styles.title}>Signature</p>

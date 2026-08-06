@@ -84,19 +84,23 @@ export default function RegisterPage({ onRegister, onLogin }) {
 
       // Optional BuildOS account link — a failure here must not discard the
       // account that was just created.
+      let profile = data;
       if (form.buildosUserId.trim() && data.id) {
         try {
-          await postJson("/api/auth/buildos-link", {
+          // Use the linked profile the server returns so buildos_user_id is
+          // present immediately — otherwise it only appeared after a re-login.
+          const linked = await postJson("/api/auth/buildos-link", {
             profile_id: data.id,
             buildos_user_id: form.buildosUserId.trim(),
           });
+          if (linked?.id) profile = linked;
         } catch {
           // Non-fatal: the profile exists and can be linked from Settings.
         }
       }
 
-      localStorage.setItem("profile", JSON.stringify(data));
-      onRegister(data);
+      localStorage.setItem("profile", JSON.stringify(profile));
+      onRegister(profile);
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

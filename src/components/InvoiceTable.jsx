@@ -25,7 +25,7 @@ export default function InvoiceTable({
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} invoice-table`}>
       <div className={styles.header}>
         <h3 className={styles.title}>Invoice Items</h3>
       </div>

@@ -370,7 +370,8 @@ function App() {
 
   function handleLogout() {
     localStorage.removeItem("profile");
-    localStorage.removeItem("onboardingComplete");
+    // Keep "onboardingComplete" so the tour does not replay on the next
+    // sign-in. It is only reset when the user restarts the tour from Settings.
     setProfile(null);
     setPage("landing");
   }

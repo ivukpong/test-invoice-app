@@ -261,7 +261,7 @@ export default function ExportActions({
 
   return (
     <>
-      <div className={styles.container}>
+      <div className={`${styles.container} export-actions`}>
         <h3 className={styles.title}>Export & Share</h3>
         <p className={styles.subtitle}>
           Download, export, or send your invoice
